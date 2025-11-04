@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}عمليات الجرد - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    .page-header-wrapper {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+    }
+
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        border: none;
+        padding: 1rem 1.25rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+
+    .table thead th {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        font-weight: 700;
+        text-align: right;
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f9fafb;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-completed {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        font-weight: 600;
+        border-radius: 10px;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        color: white;
+    }
+
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 13px;
+    }
+
+    .pagination {
+        gap: 5px;
+    }
+
+    .page-link {
+        border: 1px solid #d1d5db;
+        color: #667eea;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .page-link:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: #667eea;
+    }
+
+    .page-item.active .page-link {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="page-header-wrapper">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="page-title mb-0">
+                    <i class="fas fa-tasks"></i> عمليات الجرد الدورية
+                </h1>
+                <p class="text-white-50 mt-2 mb-0">إدارة وتتبع عمليات جرد المخزون</p>
+            </div>
+            <a href="{{ url_for('inventory.new_inventory_count') }}" class="btn btn-light">
+                <i class="fas fa-plus"></i> بدء عملية جرد جديدة
+            </a>
+        </div>
+    </div>
+
+    <!-- Inventory Counts Table -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-list"></i> قائمة عمليات الجرد ({{ counts.total }})
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>رقم الجرد</th>
+                        <th>النوع</th>
+                        <th>المستودع</th>
+                        <th>تاريخ البدء</th>
+                        <th>الحالة</th>
+                        <th>بدأ بواسطة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if counts.items %}
+                        {% for count in counts.items %}
+                        <tr>
+                            <td><strong>{{ count.count_number }}</strong></td>
+                            <td>
+                                {% if count.count_type == 'full' %}
+                                    جرد كامل
+                                {% elif count.count_type == 'partial' %}
+                                    جرد جزئي
+                                {% else %}
+                                    جرد دراجة
+                                {% endif %}
+                            </td>
+                            <td>{{ count.warehouse_location or '-' }}</td>
+                            <td>{{ count.count_date.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>
+                                {% if count.status == 'pending' %}
+                                    <span class="badge badge-pending">قيد التنفيذ</span>
+                                {% else %}
+                                    <span class="badge badge-completed">مكتملة</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ count.started_by.first_name if count.started_by else '-' }}</td>
+                            <td>
+                                <a href="{{ url_for('inventory.edit_inventory_count', count_id=count.id) }}" 
+                                   class="btn btn-sm btn-outline-primary" title="عرض وتحرير">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <p class="text-muted">لا توجد عمليات جرد</p>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if counts.pages > 1 %}
+        <div class="card-footer">
+            <nav>
+                <ul class="pagination mb-0">
+                    {% if counts.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('inventory.inventory_counts', page=counts.prev_num) }}">السابق</a>
+                    </li>
+                    {% endif %}
+
+                    {% for page_num in counts.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num == counts.page %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('inventory.inventory_counts', page=page_num) }}">{{ page_num }}</a>
+                            </li>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if counts.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('inventory.inventory_counts', page=counts.next_num) }}">التالي</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

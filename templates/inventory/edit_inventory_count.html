@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block title %}تحرير عملية جرد - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    .page-header-wrapper {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+    }
+
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        border: none;
+        padding: 1rem 1.25rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+
+    .status-badge-pending {
+        background: #fef3c7;
+        color: #92400e;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .status-badge-completed {
+        background: #dcfce7;
+        color: #15803d;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .table thead th {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        font-weight: 700;
+        text-align: right;
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .form-control, .form-select, textarea {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 10px 12px;
+    }
+
+    .form-control:focus, .form-select:focus, textarea:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 0.5rem;
+    }
+
+    .variance-positive {
+        color: #10b981;
+        font-weight: 600;
+    }
+
+    .variance-negative {
+        color: #ef4444;
+        font-weight: 600;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 0.6rem 1.5rem;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        color: white;
+    }
+
+    .info-text {
+        font-size: 13px;
+        color: #9ca3af;
+        margin-top: 0.3rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="page-header-wrapper">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="page-title mb-0">
+                    <i class="fas fa-clipboard"></i> عملية الجرد: {{ count.count_number }}
+                </h1>
+                <p class="text-white-50 mt-2 mb-0">أدخل الكميات الفعلية للتحقق من المخزون</p>
+            </div>
+            <div>
+                {% if count.status == 'pending' %}
+                    <span class="status-badge-pending"><i class="fas fa-clock"></i> قيد التنفيذ</span>
+                {% else %}
+                    <span class="status-badge-completed"><i class="fas fa-check"></i> مكتملة</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Count Details -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-info-circle"></i> تفاصيل العملية
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>نوع الجرد:</strong>
+                    <p class="text-muted mb-0">
+                        {% if count.count_type == 'full' %}
+                            جرد كامل
+                        {% elif count.count_type == 'partial' %}
+                            جرد جزئي
+                        {% else %}
+                            جرد دورة
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-3">
+                    <strong>المستودع:</strong>
+                    <p class="text-muted mb-0">{{ count.warehouse_location or '-' }}</p>
+                </div>
+                <div class="col-md-3">
+                    <strong>تاريخ البدء:</strong>
+                    <p class="text-muted mb-0">{{ count.count_date.strftime('%d/%m/%Y %H:%M') }}</p>
+                </div>
+                <div class="col-md-3">
+                    <strong>بدأ بواسطة:</strong>
+                    <p class="text-muted mb-0">{{ count.started_by.first_name if count.started_by else '-' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items Table -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-boxes"></i> الأصناف ({{ count.items | length }})
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>الصنف</th>
+                        <th>الكود</th>
+                        <th>الكمية بالنظام</th>
+                        <th>الكمية الفعلية</th>
+                        <th>الفرق</th>
+                        <th>سبب الفرق</th>
+                        <th>الإجراء</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if count.items %}
+                        {% for item in count.items %}
+                        <tr>
+                            <td><strong>{{ item.item.name }}</strong></td>
+                            <td><span class="badge bg-info">{{ item.item.code }}</span></td>
+                            <td>{{ item.system_quantity }}</td>
+                            <td>
+                                <span id="physical_{{ item.id }}">
+                                    {% if item.physical_count %}{{ item.physical_count }}{% else %}<em class="text-muted">لم تدخل</em>{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                {% if item.variance %}
+                                    {% if item.variance > 0 %}
+                                        <span class="variance-positive">+{{ item.variance }}</span>
+                                    {% else %}
+                                        <span class="variance-negative">{{ item.variance }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    <em class="text-muted">--</em>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.variance_reason or '-' }}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#editItemModal"
+                                        onclick="setItemData('{{ item.id }}', '{{ item.item.name }}', '{{ item.system_quantity }}', '{{ item.physical_count or '' }}', '{{ item.variance_reason or '' }}')">
+                                    <i class="fas fa-edit"></i> تحديث
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <p class="text-muted">لا توجد أصناف في هذه العملية</p>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    {% if count.status == 'pending' %}
+    <div class="d-flex gap-2">
+        <form method="POST" style="display: inline;">
+            <input type="hidden" name="action" value="complete">
+            <button type="submit" class="btn btn-primary" onclick="return confirm('هل تريد إغلاق هذه العملية؟')">
+                <i class="fas fa-check"></i> إغلاق العملية
+            </button>
+        </form>
+        <a href="{{ url_for('inventory.inventory_counts') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> عودة
+        </a>
+    </div>
+    {% else %}
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('inventory.inventory_counts') }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> عودة إلى القائمة
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Edit Item Modal -->
+<div class="modal fade" id="editItemModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تحديث الكمية</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                <input type="hidden" name="action" value="update_item">
+                <input type="hidden" name="item_id" id="editItemId">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">الصنف</label>
+                        <input type="text" class="form-control" id="editItemName" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">الكمية بالنظام</label>
+                        <input type="text" class="form-control" id="editItemSystem" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">الكمية الفعلية</label>
+                        <input type="number" class="form-control" name="physical_count" id="editItemPhysical" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">سبب الفرق (اختياري)</label>
+                        <textarea class="form-control" name="variance_reason" id="editItemReason" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function setItemData(itemId, itemName, systemQty, physicalQty, reason) {
+    document.getElementById('editItemId').value = itemId;
+    document.getElementById('editItemName').value = itemName;
+    document.getElementById('editItemSystem').value = systemQty;
+    document.getElementById('editItemPhysical').value = physicalQty;
+    document.getElementById('editItemReason').value = reason;
+}
+</script>
+{% endblock %}

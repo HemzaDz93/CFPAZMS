@@ -1,0 +1,440 @@
+{% extends "base.html" %}
+
+{% block title %}تسليمات العتاد - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    /* ============================================
+       MODERN GRADIENT DESIGN SYSTEM
+       ============================================ */
+    
+    /* Page Header Styling */
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: none;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Card Styling */
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        background: #ffffff;
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px 12px 0 0;
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: 0.3px;
+        padding: 1.25rem;
+    }
+
+    .card-header .card-title {
+        color: white;
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: 0.3px;
+        margin-bottom: 0;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    /* Form Controls */
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.8rem;
+        font-size: 0.95rem;
+    }
+
+    .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        background-color: #f9fafb;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-select:focus {
+        border-color: #667eea;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+
+    /* Buttons */
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+
+    .btn-outline-primary {
+        border: 2px solid #667eea;
+        color: #667eea;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        padding: 0.75rem 1.5rem;
+    }
+
+    .btn-outline-primary:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: transparent;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-sm.btn-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+    }
+
+    .btn-sm.btn-warning:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+
+    /* Table Styling */
+    .table-responsive {
+        border-radius: 0 0 12px 12px;
+    }
+
+    table.table {
+        margin-bottom: 0;
+    }
+
+    table.table thead tr {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+
+    table.table thead th,
+    table.table thead.table-light th {
+        color: white;
+        font-weight: 700;
+        border: none;
+        padding: 1.25rem;
+        text-align: right;
+        letter-spacing: 0.3px;
+        font-size: 1rem;
+        background: transparent;
+    }
+
+    table.table tbody tr {
+        border-bottom: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+
+    table.table tbody tr:hover {
+        background-color: #f9fafb;
+        box-shadow: inset 4px 0 0 #667eea;
+    }
+
+    table.table tbody td {
+        padding: 1.25rem;
+        vertical-align: middle;
+        text-align: right;
+        color: #374151;
+        font-weight: 500;
+    }
+
+    table.table strong {
+        color: #667eea;
+    }
+
+    table.table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    /* Badge Styling */
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        letter-spacing: 0.2px;
+        display: inline-block;
+    }
+
+    .bg-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    .bg-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+
+    /* Pagination Styling */
+    .pagination {
+        gap: 0.5rem;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .page-item .page-link {
+        border: 2px solid #e5e7eb;
+        color: #667eea;
+        background-color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 0.5rem 0.75rem;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .page-item .page-link:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: transparent;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .page-item.active .page-link {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: transparent;
+        color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .page-item.disabled .page-link {
+        color: #9ca3af;
+        background-color: #f3f4f6;
+        border-color: #e5e7eb;
+        cursor: not-allowed;
+    }
+
+    /* Alert Styling */
+    .alert {
+        border: none;
+        border-radius: 12px;
+        border-left: 4px solid;
+        padding: 1.25rem;
+        font-weight: 500;
+    }
+
+    .alert-info {
+        background-color: #ecf0ff;
+        border-left-color: #667eea;
+        color: #3b2667;
+    }
+
+    .alert-info i {
+        margin-left: 0.5rem;
+    }
+
+    /* Text Utilities */
+    .text-muted {
+        color: #9ca3af !important;
+        font-weight: 500;
+    }
+
+    .text-center {
+        text-align: center !important;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 2rem;
+        }
+
+        table.table thead th {
+            padding: 1rem 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        table.table tbody td {
+            padding: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="page-title">
+                    <i class="fas fa-hand-holding"></i> تسليمات العتاد
+                </h1>
+                <a href="{{ url_for('equipment.add_issue') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> تسليم عتاد جديد
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-6">
+                            <label for="user_filter" class="form-label">الموظف</label>
+                            <select class="form-select" id="user_filter" name="user_id">
+                                <option value="">جميع الموظفين</option>
+                                {% for user in users %}
+                                <option value="{{ user.id }}" {% if selected_user == (user.id|string) %}selected{% endif %}>
+                                    {{ user.full_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <button type="submit" class="btn btn-outline-primary mt-4">
+                                <i class="fas fa-filter"></i> تطبيق الفلتر
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Issues Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">قائمة التسليمات</h5>
+                </div>
+                <div class="card-body">
+                    {% if issues.items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>رقم التسليم</th>
+                                    <th>كود الأصل</th>
+                                    <th>الموظف</th>
+                                    <th>تاريخ التسليم</th>
+                                    <th>تاريخ التسليم المتوقع</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for issue in issues.items %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ issue.issue_number }}</strong>
+                                    </td>
+                                    <td>{{ issue.asset.asset_code if issue.asset else '-' }}</td>
+                                    <td>{{ issue.issued_to.full_name if issue.issued_to else '-' }}</td>
+                                    <td>{{ issue.issue_date.strftime('%Y-%m-%d') if issue.issue_date else '-' }}</td>
+                                    <td>{{ issue.expected_return_date.strftime('%Y-%m-%d') if issue.expected_return_date else '-' }}</td>
+                                    <td>
+                                        {% if issue.actual_return_date %}
+                                            <span class="badge bg-success">مسترجع</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">معلق</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if not issue.actual_return_date %}
+                                        <a href="{{ url_for('equipment.return_issue', issue_id=issue.id) }}" class="btn btn-sm btn-warning" title="إرجاع">
+                                            <i class="fas fa-undo"></i>
+                                        </a>
+                                        {% else %}
+                                        <span class="text-muted">مسترجع</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if issues.pages > 1 %}
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if issues.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1&user_id={{ selected_user or '' }}">الأولى</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ issues.prev_num }}&user_id={{ selected_user or '' }}">السابقة</a>
+                            </li>
+                            {% endif %}
+
+                            {% for page_num in issues.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num == issues.page %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page_num }}</span>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_num }}&user_id={{ selected_user or '' }}">{{ page_num }}</a>
+                                    </li>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if issues.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ issues.next_num }}&user_id={{ selected_user or '' }}">التالية</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ issues.pages }}&user_id={{ selected_user or '' }}">الأخيرة</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    {% else %}
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle"></i> لا توجد تسليمات عتاد
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

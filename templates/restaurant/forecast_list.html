@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}توقعات الطلب على الوجبات{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-chart-line"></i> توقعات الطلب على الوجبات</h1>
+        {% if has_permission('restaurant_add_forecast') %}
+        <a href="{{ url_for('restaurant_advanced.add_forecast') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> إضافة توقع جديد
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- البحث والتصفية -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <input type="date" name="date_from" class="form-control" placeholder="من تاريخ..." value="{{ date_from }}">
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-outline-primary w-100">بحث</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- جدول التوقعات -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>نوع الوجبة</th>
+                        <th>الحصص المتوقعة</th>
+                        <th>مستوى الثقة</th>
+                        <th>الفعلي</th>
+                        <th>خطأ التنبؤ</th>
+                        <th>طريقة التنبؤ</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for forecast in forecasts %}
+                    <tr>
+                        <td>{{ forecast.forecast_date.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {% set meal_labels = {
+                                'breakfast': 'الإفطار',
+                                'lunch': 'الغداء',
+                                'dinner': 'العشاء',
+                                'snack': 'وجبة خفيفة'
+                            } %}
+                            <span class="badge bg-info">{{ meal_labels.get(forecast.meal_type, forecast.meal_type) }}</span>
+                        </td>
+                        <td><strong>{{ forecast.forecasted_portions }}</strong></td>
+                        <td>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ forecast.confidence_level * 100 }}%">
+                                    {{ (forecast.confidence_level * 100)|int }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if forecast.actual_portions %}
+                                <span class="badge bg-primary">{{ forecast.actual_portions }}</span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if forecast.error_percentage %}
+                                <span class="badge bg-warning">{{ forecast.error_percentage|round(1) }}%</span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% set method_labels = {
+                                'statistical': 'إحصائي',
+                                'ml_based': 'آلي',
+                                'manual': 'يدوي',
+                                'historical_average': 'متوسط تاريخي'
+                            } %}
+                            <small>{{ method_labels.get(forecast.forecasting_method, forecast.forecasting_method) }}</small>
+                        </td>
+                        <td>
+                            {% if not forecast.actual_portions %}
+                            <button class="btn btn-sm btn-success" data-bs-toggle="modal" 
+                                    data-bs-target="#update-forecast-{{ forecast.id }}">
+                                <i class="fas fa-edit"></i> تحديث الفعلي
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if not forecasts %}
+        <div class="alert alert-info m-3">
+            لا توجد توقعات طلب.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- الترقيم -->
+    {% if pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% for page_num in range(1, pages + 1) %}
+            <li class="page-item {% if page_num == current_page %}active{% endif %}">
+                <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- نوافذ تحديث الفعلي -->
+{% for forecast in forecasts %}
+{% if not forecast.actual_portions %}
+<div class="modal fade" id="update-forecast-{{ forecast.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تحديث الاستهلاك الفعلي</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{{ url_for('restaurant_advanced.update_forecast_actual', forecast_id=forecast.id) }}">
+                <div class="modal-body">
+                    <p class="text-muted">التاريخ: {{ forecast.forecast_date }} - {{ forecast.meal_type }}</p>
+                    
+                    <div class="mb-3">
+                        <label for="actual_portions_{{ forecast.id }}" class="form-label">عدد الحصص الفعلي *</label>
+                        <input type="number" id="actual_portions_{{ forecast.id }}" name="actual_portions" 
+                               class="form-control" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="actual_consumption_{{ forecast.id }}" class="form-label">معدل الاستهلاك الفعلي (%)</label>
+                        <input type="number" id="actual_consumption_{{ forecast.id }}" name="actual_consumption" 
+                               class="form-control" min="0" max="100" step="0.1">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% endblock %}

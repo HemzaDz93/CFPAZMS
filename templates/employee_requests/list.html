@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}طلباتي - نظام الإدارة{% endblock %}
+
+{% block extra_css %}
+<style>
+    .request-card {
+        border-right: 4px solid #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .request-card:hover {
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    }
+    
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .status-pending {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+    
+    .status-approved {
+        background-color: #dcfce7;
+        color: #166534;
+    }
+    
+    .status-rejected {
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .status-delivered {
+        background-color: #e0e7ff;
+        color: #3730a3;
+    }
+    
+    .request-number {
+        font-weight: 700;
+        color: #667eea;
+        font-size: 1.1rem;
+    }
+    
+    .request-date {
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+    
+    .btn-group-sm {
+        gap: 0.5rem;
+    }
+    
+    .no-requests {
+        text-align: center;
+        padding: 3rem;
+        color: #9ca3af;
+    }
+    
+    .no-requests i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- الرأس -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>
+                <i class="fas fa-list"></i> 
+                {% if is_approver %}
+                    جميع طلبات المنتجات
+                {% else %}
+                    طلباتي
+                {% endif %}
+            </h1>
+            <p class="text-muted">
+                {% if is_approver %}
+                    إدارة وموافقة على جميع طلبات الموظفين
+                {% else %}
+                    إدارة طلبات المنتجات الخاصة بك
+                {% endif %}
+            </p>
+        </div>
+        <a href="{{ url_for('employee_requests.create_request') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus"></i> طلب جديد
+        </a>
+    </div>
+
+    <!-- مرشحات الحالة -->
+    <div class="mb-4">
+        <div class="btn-group" role="group">
+            <a href="{{ url_for('employee_requests.list_requests') }}" 
+               class="btn btn-outline-secondary {% if not status_filter %}active{% endif %}">
+                <i class="fas fa-list"></i> الكل
+            </a>
+            <a href="{{ url_for('employee_requests.list_requests', status='pending') }}" 
+               class="btn btn-outline-warning {% if status_filter == 'pending' %}active{% endif %}">
+                <i class="fas fa-hourglass-half"></i> قيد الانتظار
+            </a>
+            <a href="{{ url_for('employee_requests.list_requests', status='approved') }}" 
+               class="btn btn-outline-success {% if status_filter == 'approved' %}active{% endif %}">
+                <i class="fas fa-check-circle"></i> موافق عليه
+            </a>
+            <a href="{{ url_for('employee_requests.list_requests', status='rejected') }}" 
+               class="btn btn-outline-danger {% if status_filter == 'rejected' %}active{% endif %}">
+                <i class="fas fa-times-circle"></i> مرفوض
+            </a>
+            <a href="{{ url_for('employee_requests.list_requests', status='delivered') }}" 
+               class="btn btn-outline-info {% if status_filter == 'delivered' %}active{% endif %}">
+                <i class="fas fa-box"></i> تم التسليم
+            </a>
+        </div>
+    </div>
+
+    <!-- قائمة الطلبات -->
+    {% if requests %}
+        <div class="row">
+            {% for req in requests %}
+            <div class="col-lg-12 mb-3">
+                <div class="card request-card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-{% if is_approver %}6{% else %}8{% endif %}">
+                                <div class="request-number">
+                                    {{ req.request_number }}
+                                </div>
+                                {% if is_approver %}
+                                <div class="mb-2" style="color: #6b7280; font-size: 0.9rem;">
+                                    <i class="fas fa-user"></i> 
+                                    <strong>من:</strong> {{ req.requested_by.full_name }}
+                                </div>
+                                {% endif %}
+                                <div class="request-date mb-2">
+                                    <i class="fas fa-calendar"></i> 
+                                    {{ req.request_date.strftime('%d-%m-%Y %H:%M') }}
+                                </div>
+                                <div class="mb-2">
+                                    <strong>عدد المنتجات:</strong> {{ req.total_items }}
+                                </div>
+                                <div>
+                                    <strong>الكمية الإجمالية:</strong> {{ req.total_quantity }}
+                                </div>
+                            </div>
+                            <div class="col-md-{% if is_approver %}6{% else %}4{% endif %} text-end">
+                                <div class="mb-3">
+                                    <span class="status-badge status-{{ req.status }}">
+                                        {{ req.get_status_display() }}
+                                    </span>
+                                </div>
+                                <div class="btn-group-sm d-flex justify-content-end flex-wrap gap-2">
+                                    <a href="{{ url_for('employee_requests.view_request', request_id=req.id) }}" 
+                                       class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i> عرض
+                                    </a>
+                                    {% if is_approver and req.status == 'pending' %}
+                                    <form method="POST" action="{{ url_for('employee_requests.approve_request', request_id=req.id) }}" 
+                                          style="display: inline;" 
+                                          onsubmit="return confirm('هل تريد الموافقة على هذا الطلب؟');">
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            <i class="fas fa-check"></i> موافقة
+                                        </button>
+                                    </form>
+                                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" 
+                                            data-bs-target="#rejectModal{{ req.id }}">
+                                        <i class="fas fa-times"></i> رفض
+                                    </button>
+                                    {% endif %}
+                                    {% if req.status == 'approved' %}
+                                    <a href="{{ url_for('employee_requests.print_receipt', request_id=req.id) }}" 
+                                       class="btn btn-sm btn-secondary" target="_blank">
+                                        <i class="fas fa-print"></i> طباعة
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if is_approver and req.status == 'pending' %}
+            <!-- Rejection Modal -->
+            <div class="modal fade" id="rejectModal{{ req.id }}" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">رفض الطلب</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form method="POST" action="{{ url_for('employee_requests.reject_request', request_id=req.id) }}">
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="rejection_reason{{ req.id }}" class="form-label">سبب الرفض:</label>
+                                    <textarea class="form-control" id="rejection_reason{{ req.id }}" name="rejection_reason" 
+                                              rows="4" placeholder="أدخل سبب رفض الطلب"></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                <button type="submit" class="btn btn-danger">رفض الطلب</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- الترقيم -->
+        {% if pagination.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('employee_requests.list_requests', page=pagination.prev_num, status=status_filter) }}">
+                        السابق
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for page_num in pagination.iter_pages() %}
+                    {% if page_num %}
+                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('employee_requests.list_requests', page=page_num, status=status_filter) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('employee_requests.list_requests', page=pagination.next_num, status=status_filter) }}">
+                        التالي
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+    {% else %}
+        <div class="card">
+            <div class="card-body no-requests">
+                <div>
+                    <i class="fas fa-inbox"></i>
+                </div>
+                <h4>لا توجد طلبات</h4>
+                <p>لم تقدم أي طلبات حتى الآن</p>
+                <a href="{{ url_for('employee_requests.create_request') }}" class="btn btn-primary mt-3">
+                    <i class="fas fa-plus"></i> قدم طلب جديد
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

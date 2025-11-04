@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}التقارير - نظام الإدارة{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="page-title">
+                <i class="fas fa-chart-bar"></i> التقارير
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Inventory Reports -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-box"></i> تقارير المخزون
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">عرض تقارير تفصيلية حول حركة المخزون والأصناف منخفضة المخزون</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('reports.inventory_movement') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-exchange-alt"></i> حركة المخزون
+                        </a>
+                        <a href="{{ url_for('reports.low_stock') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-exclamation-triangle"></i> الأصناف منخفضة المخزون
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Equipment Reports -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-tools"></i> تقارير المعدات
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">عرض تقارير تفصيلية حول جرد الأصول والمعدات</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('reports.asset_inventory') }}" class="btn btn-outline-success">
+                            <i class="fas fa-clipboard-list"></i> جرد الأصول
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Restaurant Reports -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-warning text-white">
+                    <i class="fas fa-utensils"></i> تقارير المطعم
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">عرض تقارير حول استهلاك الوجبات والمكونات</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('reports.meal_consumption') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-chart-pie"></i> استهلاك الوجبات
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

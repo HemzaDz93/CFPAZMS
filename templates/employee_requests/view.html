@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block title %}تفاصيل الطلب - نظام الإدارة{% endblock %}
+
+{% block extra_css %}
+<style>
+    .status-header {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+    }
+    
+    .status-badge {
+        padding: 0.75rem 1.5rem;
+        border-radius: 20px;
+        font-size: 1rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .status-pending {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+    
+    .status-approved {
+        background-color: #dcfce7;
+        color: #166534;
+    }
+    
+    .status-rejected {
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .status-delivered {
+        background-color: #e0e7ff;
+        color: #3730a3;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .info-card {
+        background: #f9fafb;
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 3px solid #667eea;
+    }
+    
+    .info-label {
+        color: #6b7280;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+    }
+    
+    .info-value {
+        color: #1f2937;
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+    
+    .items-table {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .rejection-reason {
+        background: #fee2e2;
+        border-left: 4px solid #991b1b;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+    
+    .rejection-reason p {
+        color: #991b1b;
+        margin: 0;
+    }
+    
+    .approval-modal .modal-body {
+        padding: 2rem;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+    
+    .action-buttons button {
+        min-width: 150px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- رأس الحالة -->
+    <div class="status-header">
+        <div class="row">
+            <div class="col-md-8">
+                <h2 class="mb-3">
+                    <i class="fas fa-file-invoice"></i> {{ request.request_number }}
+                </h2>
+                <div class="mb-2">
+                    <strong>التاريخ:</strong>
+                    {{ request.request_date.strftime('%d-%m-%Y %H:%M') }}
+                </div>
+                {% if is_owner %}
+                <div>
+                    <strong>من:</strong>
+                    {{ current_user.full_name }}
+                </div>
+                {% else %}
+                <div>
+                    <strong>من:</strong>
+                    {{ request.requested_by.full_name }}
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-md-4 text-end">
+                <span class="status-badge status-{{ request.status }}">
+                    {{ request.get_status_display() }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- الرسالة في حالة الرفض -->
+    {% if request.status == 'rejected' and request.rejection_reason %}
+    <div class="rejection-reason">
+        <h5>
+            <i class="fas fa-info-circle"></i> سبب الرفض
+        </h5>
+        <p>{{ request.rejection_reason }}</p>
+    </div>
+    {% endif %}
+
+    <!-- البيانات الأساسية -->
+    <div class="info-grid">
+        <div class="info-card">
+            <div class="info-label">عدد الأصناف</div>
+            <div class="info-value">{{ request.total_items }}</div>
+        </div>
+        <div class="info-card">
+            <div class="info-label">الكمية الإجمالية</div>
+            <div class="info-value">{{ request.total_quantity }}</div>
+        </div>
+        <div class="info-card">
+            <div class="info-label">القيمة الإجمالية</div>
+            <div class="info-value">{{ "%.3f"|format(request.total_cost) }} د.ت</div>
+        </div>
+        {% if request.approved_by %}
+        <div class="info-card">
+            <div class="info-label">وافق بواسطة</div>
+            <div class="info-value">{{ request.approved_by.full_name }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- جدول المنتجات -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-list"></i> تفاصيل المنتجات
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>الكود</th>
+                            <th>اسم المنتج</th>
+                            <th>الوحدة</th>
+                            <th>الكمية</th>
+                            <th>السعر الوحدة</th>
+                            <th>الإجمالي</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in request.items %}
+                        <tr>
+                            <td><span class="badge bg-secondary">{{ item.item.code }}</span></td>
+                            <td>{{ item.item.name }}</td>
+                            <td>{{ item.item.unit }}</td>
+                            <td><strong>{{ item.quantity }}</strong></td>
+                            <td>{{ "%.3f"|format(item.unit_price or 0) }} د.ت</td>
+                            <td><strong>{{ "%.3f"|format(item.total_price) }} د.ت</strong></td>
+                            <td>
+                                {% if item.item_status == 'delivered' %}
+                                <span class="badge bg-success">تم التسليم</span>
+                                {% elif item.item_status == 'partial' %}
+                                <span class="badge bg-warning">جزئي</span>
+                                {% else %}
+                                <span class="badge bg-secondary">معلق</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- الملاحظات -->
+    {% if request.notes %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-sticky-note"></i> ملاحظات الطلب
+            </h5>
+        </div>
+        <div class="card-body">
+            <p>{{ request.notes }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- الملاحظات الداخلية (للمسؤول فقط) -->
+    {% if is_approver and request.internal_notes %}
+    <div class="card mb-4 border-info">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="fas fa-lock"></i> ملاحظات داخلية
+            </h5>
+        </div>
+        <div class="card-body">
+            <p>{{ request.internal_notes }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- الأزرار -->
+    <div class="action-buttons">
+        {% if request.status == 'approved' and is_owner %}
+        <a href="{{ url_for('employee_requests.print_receipt', request_id=request.id) }}" 
+           class="btn btn-primary" target="_blank">
+            <i class="fas fa-print"></i> طباعة الوصل
+        </a>
+        {% endif %}
+
+        {% if request.status == 'pending' and is_approver %}
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal">
+            <i class="fas fa-check-circle"></i> الموافقة
+        </button>
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+            <i class="fas fa-times-circle"></i> الرفض
+        </button>
+        {% endif %}
+
+        <a href="{{ url_for('employee_requests.list_requests') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> العودة
+        </a>
+    </div>
+</div>
+
+<!-- نافذة الموافقة -->
+<div class="modal fade approval-modal" id="approveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تأكيد الموافقة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('employee_requests.approve_request', request_id=request.id) }}">
+                <div class="modal-body">
+                    <p>هل أنت متأكد من الموافقة على هذا الطلب؟</p>
+                    <p class="text-muted">سيتم خصم المنتجات من المخزون تلقائياً.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i> نعم، وافق
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- نافذة الرفض -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">رفض الطلب</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('employee_requests.reject_request', request_id=request.id) }}">
+                <div class="modal-body">
+                    <label class="form-label">سبب الرفض</label>
+                    <textarea 
+                        name="rejection_reason" 
+                        class="form-control" 
+                        rows="4"
+                        placeholder="أذكر السبب هنا..."
+                        required
+                    ></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> رفض الطلب
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

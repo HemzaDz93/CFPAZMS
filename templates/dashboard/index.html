@@ -1,0 +1,518 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة التحكم - نظام الإدارة{% endblock %}
+
+{% block extra_css %}
+<style>
+    .welcome-section {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        padding: 2.5rem;
+        border-radius: 16px;
+        border: 1px solid rgba(102, 126, 234, 0.2);
+        margin-bottom: 2.5rem;
+    }
+    
+    .welcome-section h1 {
+        margin: 0;
+        color: #667eea;
+    }
+    
+    .welcome-section p {
+        color: #64748b;
+        font-weight: 500;
+        margin-bottom: 0;
+    }
+    
+    .stat-card-wrapper {
+        perspective: 1000px;
+    }
+    
+    .stat-card {
+        position: relative;
+        padding: 2rem !important;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+        border-radius: 16px;
+        background: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.08);
+        border: 1px solid rgba(102, 126, 234, 0.1);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.2);
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+    }
+    
+    .stat-card:nth-child(2)::before {
+        background: linear-gradient(90deg, #10b981, #059669);
+    }
+    
+    .stat-card:nth-child(3)::before {
+        background: linear-gradient(90deg, #f59e0b, #d97706);
+    }
+    
+    .stat-card:nth-child(4)::before {
+        background: linear-gradient(90deg, #ef4444, #dc2626);
+    }
+    
+    .stat-card-content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+    }
+    
+    .stat-icon {
+        width: 120px;
+        height: 120px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 4.5rem;
+        position: relative;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        font-weight: 700;
+    }
+    
+    .stat-card-wrapper:nth-child(1) .stat-icon {
+        background: #e0e7ff;
+    }
+    
+    .stat-card-wrapper:nth-child(1) .stat-icon i {
+        color: #4f46e5 !important;
+    }
+    
+    .stat-card-wrapper:nth-child(2) .stat-icon {
+        background: #d1fae5;
+    }
+    
+    .stat-card-wrapper:nth-child(2) .stat-icon i {
+        color: #059669 !important;
+    }
+    
+    .stat-card-wrapper:nth-child(3) .stat-icon {
+        background: #fef3c7;
+    }
+    
+    .stat-card-wrapper:nth-child(3) .stat-icon i {
+        color: #d97706 !important;
+    }
+    
+    .stat-card-wrapper:nth-child(4) .stat-icon {
+        background: #fee2e2;
+    }
+    
+    .stat-card-wrapper:nth-child(4) .stat-icon i {
+        color: #dc2626 !important;
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 1rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+    
+    .meals-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 2rem;
+    }
+    
+    .meal-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+        border: 1px solid rgba(102, 126, 234, 0.1);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.08);
+        position: relative;
+    }
+    
+    .meal-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        z-index: 2;
+    }
+    
+    .meal-card-image {
+        width: 100%;
+        height: 180px;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .meal-card-image::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), transparent);
+        opacity: 0;
+        animation: shimmer 3s ease-in-out infinite;
+    }
+    
+    @keyframes shimmer {
+        0%, 100% { opacity: 0; }
+        50% { opacity: 1; }
+    }
+    
+    .meal-card-content {
+        padding: 1.5rem;
+    }
+    
+    .meal-badge {
+        display: inline-block;
+        padding: 0.4rem 0.9rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.8rem;
+    }
+    
+    .meal-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.8rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .meal-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        color: #64748b;
+    }
+    
+    .meal-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.2);
+    }
+    
+    .meal-card:nth-child(1) .meal-card-image {
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.15) 100%);
+    }
+    
+    .meal-card:nth-child(1)::before {
+        background: linear-gradient(90deg, #fbbf24, #f59e0b);
+    }
+    
+    .meal-card:nth-child(2) .meal-card-image {
+        background: linear-gradient(135deg, rgba(96, 165, 250, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%);
+    }
+    
+    .meal-card:nth-child(2)::before {
+        background: linear-gradient(90deg, #60a5fa, #3b82f6);
+    }
+    
+    .meal-card:nth-child(3) .meal-card-image {
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(124, 58, 237, 0.15) 100%);
+    }
+    
+    .meal-card:nth-child(3)::before {
+        background: linear-gradient(90deg, #8b5cf6, #7c3aed);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <h1>
+            <i class="fas fa-chart-line"></i> مرحباً بك في لوحة التحكم
+        </h1>
+        {% if org_settings %}
+        <p>
+            <strong>{{ org_settings.ministry_name }}</strong> - 
+            <strong>{{ org_settings.directorate_name }}</strong> - 
+            <strong>{{ org_settings.institution_name }}</strong>
+        </p>
+        {% endif %}
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-6 col-lg-3 mb-3 stat-card-wrapper">
+            <div class="card stat-card">
+                <div class="stat-card-content">
+                    <div class="stat-icon">
+                        <i class="fas fa-warehouse"></i>
+                    </div>
+                    <div class="stat-value">{{ stats.total_items }}</div>
+                    <div class="stat-label">إجمالي الأصناف</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3 stat-card-wrapper">
+            <div class="card stat-card">
+                <div class="stat-card-content">
+                    <div class="stat-icon">
+                        <i class="fas fa-people-group"></i>
+                    </div>
+                    <div class="stat-value">{{ stats.total_users }}</div>
+                    <div class="stat-label">عدد المستخدمين</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3 stat-card-wrapper">
+            <div class="card stat-card">
+                <div class="stat-card-content">
+                    <div class="stat-icon">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <div class="stat-value">{{ stats.total_suppliers }}</div>
+                    <div class="stat-label">عدد الموردين</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3 stat-card-wrapper">
+            <div class="card stat-card">
+                <div class="stat-card-content">
+                    <div class="stat-icon">
+                        <i class="fas fa-circle-exclamation"></i>
+                    </div>
+                    <div class="stat-value">{{ stats.low_stock_items }}</div>
+                    <div class="stat-label">أصناف منخفضة</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Low Stock Items -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-exclamation-triangle"></i> أصناف منخفضة المخزون
+                </div>
+                <div class="card-body">
+                    {% if low_stock_items %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th>الكود</th>
+                                    <th>الاسم</th>
+                                    <th>الكمية</th>
+                                    <th>الحد الأدنى</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in low_stock_items %}
+                                <tr>
+                                    <td><span class="badge bg-info">{{ item.code }}</span></td>
+                                    <td>{{ item.name }}</td>
+                                    <td><span class="badge bg-danger">{{ item.quantity_in_stock }}</span></td>
+                                    <td>{{ item.minimum_quantity }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> جميع الأصناف لديها مخزون كافي
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('reports.low_stock') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye"></i> عرض التقرير الكامل
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Purchase Orders -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-receipt"></i> أوامر شراء قيد الانتظار
+                </div>
+                <div class="card-body">
+                    {% if pending_orders %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th>الرقم</th>
+                                    <th>المورد</th>
+                                    <th>التاريخ</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in pending_orders %}
+                                <tr>
+                                    <td><span class="badge bg-secondary">{{ order.po_number }}</span></td>
+                                    <td>{{ order.supplier.name }}</td>
+                                    <td>{{ order.order_date.strftime('%Y-%m-%d') }}</td>
+                                    <td><span class="badge bg-warning">قيد الانتظار</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> لا توجد أوامر قيد الانتظار
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('suppliers.orders') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye"></i> عرض جميع الأوامر
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-exchange"></i> آخر العمليات
+                </div>
+                <div class="card-body">
+                    {% if recent_transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>المرجع</th>
+                                    <th>الصنف</th>
+                                    <th>النوع</th>
+                                    <th>الكمية</th>
+                                    <th>التاريخ</th>
+                                    <th>بواسطة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in recent_transactions %}
+                                <tr>
+                                    <td><span class="badge bg-info">{{ transaction.reference_number }}</span></td>
+                                    <td>{{ transaction.item.name if transaction.item else '-' }}</td>
+                                    <td>
+                                        {% if transaction.transaction_type == 'purchase' %}
+                                            <span class="badge bg-success"><i class="fas fa-arrow-down"></i> شراء</span>
+                                        {% elif transaction.transaction_type == 'issue' %}
+                                            <span class="badge bg-danger"><i class="fas fa-arrow-up"></i> إخراج</span>
+                                        {% elif transaction.transaction_type == 'return' %}
+                                            <span class="badge bg-info"><i class="fas fa-undo"></i> إرجاع</span>
+                                        {% elif transaction.transaction_type == 'transfer' %}
+                                            <span class="badge bg-secondary"><i class="fas fa-exchange"></i> تحويل</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ transaction.quantity }} {{ transaction.item.unit if transaction.item else '' }}</td>
+                                    <td>{{ transaction.transaction_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>{{ transaction.created_by_user.full_name if transaction.created_by_user else '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> لا توجد عمليات حالياً
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('inventory.transactions') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye"></i> عرض جميع العمليات
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Meals -->
+    {% if today_meals %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-utensils"></i> وجبات اليوم
+                </div>
+                <div class="card-body">
+                    <div class="meals-grid">
+                        {% for meal in today_meals %}
+                        <div class="meal-card">
+                            <div class="meal-card-image">
+                                {% if meal.meal_type == 'breakfast' %}
+                                    <i class="fas fa-sun"></i>
+                                {% elif meal.meal_type == 'lunch' %}
+                                    <i class="fas fa-cloud-sun"></i>
+                                {% elif meal.meal_type == 'dinner' %}
+                                    <i class="fas fa-moon"></i>
+                                {% else %}
+                                    <i class="fas fa-utensils"></i>
+                                {% endif %}
+                            </div>
+                            <div class="meal-card-content">
+                                <div class="meal-badge" style="
+                                    {% if meal.meal_type == 'breakfast' %}
+                                        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: white;
+                                    {% elif meal.meal_type == 'lunch' %}
+                                        background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%); color: white;
+                                    {% elif meal.meal_type == 'dinner' %}
+                                        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white;
+                                    {% endif %}
+                                ">
+                                    {% if meal.meal_type == 'breakfast' %}
+                                        <i class="fas fa-sun"></i> الإفطار
+                                    {% elif meal.meal_type == 'lunch' %}
+                                        <i class="fas fa-cloud-sun"></i> الغداء
+                                    {% elif meal.meal_type == 'dinner' %}
+                                        <i class="fas fa-moon"></i> العشاء
+                                    {% endif %}
+                                </div>
+                                <h5 class="meal-title">{{ meal.recipe.name }}</h5>
+                                <div class="meal-info">
+                                    <i class="fas fa-users"></i>
+                                    <span>{{ meal.servings }} حصة</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

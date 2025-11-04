@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}تحليل ABC{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3">
+                    <i class="fas fa-chart-pie me-2"></i>تحليل ABC للمخزون
+                </h1>
+                <a href="{{ url_for('inventory.items') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>العودة
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">الفلاتر</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="{{ url_for('inventory.abc_analysis') }}">
+                        <div class="mb-3">
+                            <label for="category" class="form-label">الفئة</label>
+                            <select id="category" name="category" class="form-select">
+                                <option value="">الكل</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}" {% if request.args.get('category') == category.id|string %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter me-2"></i>تطبيق الفلاتر
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h6 class="text-muted">إجمالي القيمة</h6>
+                            <h3 class="text-primary">{{ "%.2f"|format(total_value) }} دج</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h6 class="text-muted">عدد الأصناف</h6>
+                            <h3 class="text-info">{{ items|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ABC Categories Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">توزيع ABC</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="abcChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ABC Items Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-table me-2"></i>الأصناف حسب التصنيف
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>الكود</th>
+                                    <th>الصنف</th>
+                                    <th>التصنيف</th>
+                                    <th>الفئة</th>
+                                    <th>القيمة الحالية</th>
+                                    <th>النسبة المئوية</th>
+                                    <th>الكمية</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ item.code }}</span>
+                                    </td>
+                                    <td>{{ item.name }}</td>
+                                    <td>
+                                        {% if item.abc_classification == 'A' %}
+                                            <span class="badge bg-danger">A - عالية</span>
+                                        {% elif item.abc_classification == 'B' %}
+                                            <span class="badge bg-warning">B - متوسطة</span>
+                                        {% else %}
+                                            <span class="badge bg-info">C - منخفضة</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.category.name if item.category else '-' }}</td>
+                                    <td class="text-end">{{ "%.2f"|format(item.quantity_in_stock * (item.unit_price or 0)) }} دج</td>
+                                    <td class="text-end">{{ "%.1f"|format((item.quantity_in_stock * (item.unit_price or 0) / total_value * 100) if total_value > 0 else 0) }}%</td>
+                                    <td class="text-center">{{ item.quantity_in_stock }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('abcChart').getContext('2d');
+    
+    const aCount = {{ category_counts.A }};
+    const bCount = {{ category_counts.B }};
+    const cCount = {{ category_counts.C }};
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['A - عالية الأهمية', 'B - متوسطة الأهمية', 'C - منخفضة الأهمية'],
+            datasets: [{
+                data: [aCount, bCount, cCount],
+                backgroundColor: ['#dc3545', '#ffc107', '#17a2b8'],
+                borderColor: ['#c82333', '#e0a800', '#138496'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: { size: 14 },
+                        padding: 20
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

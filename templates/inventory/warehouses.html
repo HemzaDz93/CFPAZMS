@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة المستودعات - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    .page-header-wrapper {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+    }
+
+    .warehouse-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border-left: 4px solid #667eea;
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+    }
+
+    .warehouse-card:hover {
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .warehouse-code {
+        display: inline-block;
+        background: #f0f9ff;
+        color: #667eea;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 12px;
+        margin-bottom: 0.5rem;
+    }
+
+    .warehouse-name {
+        font-size: 18px;
+        font-weight: 700;
+        color: #555;
+        margin: 0.5rem 0;
+    }
+
+    .warehouse-info {
+        color: #9ca3af;
+        font-size: 14px;
+        margin-bottom: 0.3rem;
+    }
+
+    .warehouse-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .btn-sm-icon {
+        padding: 0.4rem 0.8rem;
+        font-size: 13px;
+        border-radius: 8px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        font-weight: 600;
+        border-radius: 10px;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        color: white;
+    }
+
+    .btn-outline-primary {
+        color: #667eea;
+        border: 2px solid #667eea;
+        font-weight: 600;
+        border-radius: 8px;
+        background: white;
+        padding: 0.4rem 0.8rem;
+        font-size: 13px;
+    }
+
+    .btn-outline-primary:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        background: #f9fafb;
+        border-radius: 12px;
+    }
+
+    .empty-state-icon {
+        font-size: 48px;
+        color: #d1d5db;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state-text {
+        color: #9ca3af;
+        margin-bottom: 1.5rem;
+    }
+
+    .capacity-bar {
+        background: #e5e7eb;
+        height: 6px;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+
+    .capacity-fill {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        height: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="page-header-wrapper">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="page-title mb-0">
+                    <i class="fas fa-warehouse"></i> إدارة المستودعات
+                </h1>
+                <p class="text-white-50 mt-2 mb-0">إدارة المستودعات والمواقع التخزينية</p>
+            </div>
+            <a href="{{ url_for('inventory.add_warehouse') }}" class="btn btn-light">
+                <i class="fas fa-plus"></i> إضافة مستودع جديد
+            </a>
+        </div>
+    </div>
+
+    <!-- Warehouses Grid -->
+    {% if warehouses %}
+    <div class="row">
+        {% for warehouse in warehouses %}
+        <div class="col-md-6 col-lg-4">
+            <div class="warehouse-card">
+                <div class="warehouse-code">{{ warehouse.code }}</div>
+                <h5 class="warehouse-name">{{ warehouse.name }}</h5>
+                <div class="warehouse-info">
+                    <i class="fas fa-map-marker-alt"></i> {{ warehouse.location }}
+                </div>
+                {% if warehouse.address %}
+                <div class="warehouse-info">
+                    <i class="fas fa-envelope"></i> {{ warehouse.address }}
+                </div>
+                {% endif %}
+                
+                {% if warehouse.capacity %}
+                <div class="mt-2">
+                    <small class="text-muted">السعة: {{ warehouse.capacity }} وحدة</small>
+                    <div class="capacity-bar">
+                        <div class="capacity-fill" style="width: 65%;"></div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="warehouse-actions">
+                    <a href="{{ url_for('inventory.warehouse_inventory', warehouse_id=warehouse.id) }}" 
+                       class="btn btn-outline-primary btn-sm-icon">
+                        <i class="fas fa-list"></i> المخزون
+                    </a>
+                    <button class="btn btn-outline-primary btn-sm-icon" data-bs-toggle="modal" 
+                            data-bs-target="#editWarehouseModal"
+                            onclick="setWarehouseData('{{ warehouse.id }}', '{{ warehouse.code }}', '{{ warehouse.name }}', '{{ warehouse.location }}', '{{ warehouse.address }}', '{{ warehouse.capacity or '' }}')">
+                        <i class="fas fa-edit"></i> تعديل
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i class="fas fa-inbox"></i>
+        </div>
+        <p class="empty-state-text">لا توجد مستودعات مسجلة</p>
+        <a href="{{ url_for('inventory.add_warehouse') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> إضافة المستودع الأول
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Edit Warehouse Modal -->
+<div class="modal fade" id="editWarehouseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تعديل المستودع</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('inventory.add_warehouse') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">الكود</label>
+                        <input type="text" class="form-control" id="editWarehouseCode" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">الاسم</label>
+                        <input type="text" class="form-control" id="editWarehouseName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">الموقع</label>
+                        <input type="text" class="form-control" id="editWarehouseLocation" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">العنوان</label>
+                        <textarea class="form-control" id="editWarehouseAddress" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">السعة</label>
+                        <input type="number" class="form-control" id="editWarehouseCapacity" step="0.01">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function setWarehouseData(id, code, name, location, address, capacity) {
+    document.getElementById('editWarehouseCode').value = code;
+    document.getElementById('editWarehouseName').value = name;
+    document.getElementById('editWarehouseLocation').value = location;
+    document.getElementById('editWarehouseAddress').value = address;
+    document.getElementById('editWarehouseCapacity').value = capacity;
+}
+</script>
+{% endblock %}

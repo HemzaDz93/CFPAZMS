@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}تحليل الفاقد والهدر{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1><i class="fas fa-chart-pie"></i> تحليل الفاقد والهدر الغذائي</h1>
+        </div>
+        <div class="col-md-4">
+            <form method="get" class="d-flex gap-2">
+                <select name="period" class="form-select" onchange="this.form.submit()">
+                    <option value="daily" {% if period == 'daily' %}selected{% endif %}>اليومي</option>
+                    <option value="weekly" {% if period == 'weekly' %}selected{% endif %}>الأسبوعي</option>
+                    <option value="monthly" {% if period == 'monthly' %}selected{% endif %}>الشهري</option>
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <!-- بطاقات الإحصائيات الرئيسية -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">إجمالي الكمية المهدرة</h6>
+                    <h3 class="text-warning">{{ "%.2f"|format(total_quantity) }}</h3>
+                    <small>الوحدات المختلفة</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">القيمة المالية المهدرة</h6>
+                    <h3 class="text-danger">{{ "%.2f"|format(total_value) }} د.ج</h3>
+                    <small>إجمالي الخسارة</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">عدد السجلات</h6>
+                    <h3 class="text-info">{{ waste_records|length }}</h3>
+                    <small>حالات الهدر</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">الفترة الزمنية</h6>
+                    <small>من {{ date_from }} إلى {{ date_to }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- توزيع الهدر حسب السبب -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">توزيع الهدر حسب السبب</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>السبب</th>
+                                    <th>العدد</th>
+                                    <th>النسبة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set total_records = waste_records|length %}
+                                {% set reason_labels = {
+                                    'spoilage': 'تلف',
+                                    'overproduction': 'إنتاج زائد',
+                                    'quality_issue': 'مشكلة جودة',
+                                    'expired': 'انتهاء الصلاحية',
+                                    'accident': 'حادث',
+                                    'other': 'أخرى'
+                                } %}
+                                {% for reason, count in reasons_count.items() %}
+                                <tr>
+                                    <td>{{ reason_labels.get(reason, reason) }}</td>
+                                    <td><strong>{{ count }}</strong></td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ (count / total_records * 100)|int }}%
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- التوصيات -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-lightbulb"></i> التوصيات التحسينية</h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info" role="alert">
+                        <h6>بناءً على بيانات الهدر:</h6>
+                        <ul class="mb-0">
+                            {% if reasons_count.get('spoilage', 0) > 0 %}
+                            <li>تحسين ظروف التخزين والحفظ</li>
+                            {% endif %}
+                            {% if reasons_count.get('overproduction', 0) > 0 %}
+                            <li>تحسين توقعات الطلب لتقليل الإنتاج الزائد</li>
+                            {% endif %}
+                            {% if reasons_count.get('quality_issue', 0) > 0 %}
+                            <li>مراجعة معايير الجودة والتدقيق</li>
+                            {% endif %}
+                            {% if reasons_count.get('expired', 0) > 0 %}
+                            <li>تحسين نظام تتبع صلاحية المنتجات</li>
+                            {% endif %}
+                            {% if reasons_count.get('accident', 0) > 0 %}
+                            <li>تدريب الموظفين على التعامل الآمن</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- التفاصيل -->
+    <div class="card">
+        <div class="card-header bg-light">
+            <h6 class="mb-0">سجلات الهدر المفصلة</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>الصنف</th>
+                        <th>السبب</th>
+                        <th>الكمية</th>
+                        <th>القيمة</th>
+                        <th>المبلغ عن</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for waste in waste_records %}
+                    <tr>
+                        <td>{{ waste.waste_date }}</td>
+                        <td>
+                            {% if waste.item %}
+                                {{ waste.item.name }}
+                            {% elif waste.recipe %}
+                                وصفة: {{ waste.recipe.name }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% set reason_map = {
+                                'spoilage': 'تلف',
+                                'overproduction': 'إنتاج زائد',
+                                'quality_issue': 'مشكلة جودة',
+                                'expired': 'انتهاء الصلاحية',
+                                'accident': 'حادث',
+                                'other': 'أخرى'
+                            } %}
+                            <span class="badge bg-warning">{{ reason_map.get(waste.waste_reason, waste.waste_reason) }}</span>
+                        </td>
+                        <td>{{ waste.quantity_wasted }} {{ waste.unit }}</td>
+                        <td><strong>{{ "%.2f"|format(waste.total_waste_value) }} د.ج</strong></td>
+                        <td>{{ waste.reported_by.full_name }}</td>
+                        <td>
+                            {% if waste.is_approved %}
+                                <span class="badge bg-success"><i class="fas fa-check"></i> موافق عليه</span>
+                            {% else %}
+                                <span class="badge bg-secondary"><i class="fas fa-clock"></i> قيد الانتظار</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">لا توجد بيانات للفترة المحددة</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

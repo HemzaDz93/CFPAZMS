@@ -1,0 +1,459 @@
+{% extends "base.html" %}
+
+{% block title %}حركات المخزون - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    /* ============================================
+       MODERN GRADIENT DESIGN SYSTEM
+       ============================================ */
+    
+    /* Page Header Styling */
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: none;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Card Styling */
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        background: #ffffff;
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    /* Form Controls */
+    .form-control,
+    .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        background-color: #f9fafb;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #667eea;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+
+    /* Buttons */
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+
+    .btn-outline-primary {
+        border: 2px solid #667eea;
+        color: #667eea;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        padding: 0.75rem 1.5rem;
+    }
+
+    .btn-outline-primary:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: transparent;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-outline-secondary {
+        border: 2px solid #9ca3af;
+        color: #9ca3af;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        padding: 0.75rem 1.5rem;
+    }
+
+    .btn-outline-secondary:hover {
+        background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+        border-color: transparent;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-outline-warning {
+        border: 2px solid #f59e0b;
+        color: #f59e0b;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-warning:hover {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        border-color: transparent;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-group-sm .btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    /* Table Styling */
+    .table-responsive {
+        border-radius: 0 0 12px 12px;
+    }
+
+    table.table {
+        margin-bottom: 0;
+    }
+
+    table.table thead tr {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+
+    table.table thead th {
+        color: white;
+        font-weight: 700;
+        border: none;
+        padding: 1.25rem;
+        text-align: right;
+        letter-spacing: 0.3px;
+        font-size: 1rem;
+        background: transparent;
+    }
+
+    table.table thead.table-light th {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    table.table tbody tr {
+        border-bottom: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+
+    table.table tbody tr:hover {
+        background-color: #f9fafb;
+        box-shadow: inset 4px 0 0 #667eea;
+    }
+
+    table.table tbody td {
+        padding: 1.25rem;
+        vertical-align: middle;
+        text-align: right;
+        color: #374151;
+        font-weight: 500;
+    }
+
+    table.table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    /* Badge Styling */
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        letter-spacing: 0.2px;
+        display: inline-block;
+    }
+
+    .bg-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    .bg-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+
+    .bg-info {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        color: white;
+    }
+
+    .bg-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+
+    .bg-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .bg-secondary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    /* Pagination Styling */
+    .pagination {
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+
+    .page-item .page-link {
+        border: 2px solid #e5e7eb;
+        color: #667eea;
+        background-color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 0.5rem 0.75rem;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .page-item .page-link:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: transparent;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .page-item.active .page-link {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: transparent;
+        color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .page-item.disabled .page-link {
+        color: #9ca3af;
+        background-color: #f3f4f6;
+        border-color: #e5e7eb;
+        cursor: not-allowed;
+    }
+
+    /* Text Utilities */
+    .text-muted {
+        color: #9ca3af !important;
+        font-weight: 500;
+    }
+
+    .text-end {
+        text-align: left;
+        direction: ltr;
+    }
+
+    /* Empty State */
+    .text-center {
+        text-align: center !important;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 2rem;
+        }
+
+        table.table thead th {
+            padding: 1rem 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        table.table tbody td {
+            padding: 0.75rem;
+        }
+
+        .btn-group-sm .btn {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h1 class="page-title">
+                <i class="fas fa-exchange-alt"></i> حركات المخزون
+            </h1>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{{ url_for('inventory.add_transaction') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> تسجيل حركة جديدة
+            </a>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <select name="transaction_type" class="form-select">
+                        <option value="">-- جميع أنواع الحركات --</option>
+                        <option value="purchase" {% if selected_type == 'purchase' %}selected{% endif %}>ورود</option>
+                        <option value="issue" {% if selected_type == 'issue' %}selected{% endif %}>صرف</option>
+                        <option value="transfer" {% if selected_type == 'transfer' %}selected{% endif %}>تحويل</option>
+                        <option value="adjustment" {% if selected_type == 'adjustment' %}selected{% endif %}>تسوية</option>
+                        <option value="return" {% if selected_type == 'return' %}selected{% endif %}>إرجاع</option>
+                    </select>
+                </div>
+                <div class="col-md-6 text-end">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-search"></i> بحث
+                    </button>
+                    <a href="{{ url_for('inventory.transactions') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-redo"></i> إعادة تعيين
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>الصنف</th>
+                        <th>النوع</th>
+                        <th>الكمية</th>
+                        <th>الوحدة</th>
+                        <th>الملاحظات</th>
+                        <th>المسجّل بواسطة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if transactions %}
+                        {% for transaction in transactions %}
+                        <tr>
+                            <td>{{ transaction.transaction_date.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>
+                                <strong>{{ transaction.item.code }}</strong><br>
+                                <small>{{ transaction.item.name }}</small>
+                            </td>
+                            <td>
+                                <span class="badge
+                                    {% if transaction.transaction_type == 'purchase' %}bg-success
+                                    {% elif transaction.transaction_type == 'issue' %}bg-warning
+                                    {% elif transaction.transaction_type == 'transfer' %}bg-info
+                                    {% elif transaction.transaction_type == 'adjustment' %}bg-secondary
+                                    {% elif transaction.transaction_type == 'return' %}bg-primary
+                                    {% endif %}">
+                                    {% if transaction.transaction_type == 'purchase' %}ورود
+                                    {% elif transaction.transaction_type == 'issue' %}صرف
+                                    {% elif transaction.transaction_type == 'transfer' %}تحويل
+                                    {% elif transaction.transaction_type == 'adjustment' %}تسوية
+                                    {% elif transaction.transaction_type == 'return' %}إرجاع
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td class="text-end">{{ transaction.quantity }}</td>
+                            <td>{{ transaction.item.unit }}</td>
+                            <td>
+                                <small>{{ transaction.description or '-' }}</small>
+                            </td>
+                            <td>
+                                <small>{{ transaction.created_by_user.full_name if transaction.created_by_user else '-' }}</small>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('inventory.view_transaction', transaction_id=transaction.id) }}" 
+                                       class="btn btn-outline-primary" title="عرض">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if transaction.transaction_type in ['adjustment', 'issue', 'return'] %}
+                                    <a href="{{ url_for('inventory.edit_transaction', transaction_id=transaction.id) }}" 
+                                       class="btn btn-outline-warning" title="تعديل">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                            لا توجد حركات مسجلة
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if pages and pages > 1 %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if current_page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if selected_type %}&transaction_type={{ selected_type }}{% endif %}">الأولى</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ current_page - 1 }}{% if selected_type %}&transaction_type={{ selected_type }}{% endif %}">السابقة</a>
+            </li>
+            {% endif %}
+            
+            {% for page_num in range(1, pages + 1) %}
+                {% if page_num == current_page %}
+                <li class="page-item active">
+                    <span class="page-link">{{ page_num }}</span>
+                </li>
+                {% else %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_num }}{% if selected_type %}&transaction_type={{ selected_type }}{% endif %}">{{ page_num }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if current_page < pages %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ current_page + 1 }}{% if selected_type %}&transaction_type={{ selected_type }}{% endif %}">التالية</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ pages }}{% if selected_type %}&transaction_type={{ selected_type }}{% endif %}">الأخيرة</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

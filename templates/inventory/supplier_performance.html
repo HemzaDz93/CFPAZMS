@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}أداء الموردين - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    .page-header-wrapper {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+    }
+
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        border: none;
+        padding: 1rem 1.25rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+
+    .performance-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border-left: 4px solid #667eea;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .performance-card:hover {
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .supplier-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 1rem;
+    }
+
+    .supplier-name {
+        font-size: 18px;
+        font-weight: 700;
+        color: #555;
+    }
+
+    .rating-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .rating-excellent {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .rating-good {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .rating-fair {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .rating-poor {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .metric-item strong {
+        display: block;
+        color: #555;
+        margin-bottom: 0.3rem;
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+    .metric-item {
+        color: #9ca3af;
+        font-size: 14px;
+    }
+
+    .metric-value {
+        color: #667eea;
+        font-weight: 700;
+        font-size: 18px;
+    }
+
+    .table thead th {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        font-weight: 700;
+        text-align: right;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-info {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="page-header-wrapper">
+        <div>
+            <h1 class="page-title mb-0">
+                <i class="fas fa-star"></i> أداء الموردين
+            </h1>
+            <p class="text-white-50 mt-2 mb-0">تقييم وتحليل أداء الموردين</p>
+        </div>
+    </div>
+
+    <!-- Performance Cards -->
+    {% if performances %}
+        {% for perf in performances %}
+        <div class="performance-card">
+            <div class="supplier-header">
+                <div>
+                    <div class="supplier-name">{{ perf.supplier.name }}</div>
+                    <small class="text-muted">{{ perf.supplier.contact_person or '-' }}</small>
+                </div>
+                {% if perf.overall_rating >= 4.5 %}
+                    <span class="rating-badge rating-excellent">
+                        <i class="fas fa-star"></i> ممتاز
+                    </span>
+                {% elif perf.overall_rating >= 3.5 %}
+                    <span class="rating-badge rating-good">
+                        <i class="fas fa-star"></i> جيد
+                    </span>
+                {% elif perf.overall_rating >= 2.5 %}
+                    <span class="rating-badge rating-fair">
+                        <i class="fas fa-star"></i> مقبول
+                    </span>
+                {% else %}
+                    <span class="rating-badge rating-poor">
+                        <i class="fas fa-star"></i> ضعيف
+                    </span>
+                {% endif %}
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-item">
+                    <strong class="metric-value">{{ perf.total_orders }}</strong>
+                    <strong>إجمالي الطلبات</strong>
+                </div>
+                <div class="metric-item">
+                    <strong class="metric-value">{{ (perf.on_time_delivery_rate * 100) | round(1) }}%</strong>
+                    <strong>التسليم في الموعد</strong>
+                </div>
+                <div class="metric-item">
+                    <strong class="metric-value">{{ (perf.quality_rating * 100) | round(1) }}%</strong>
+                    <strong>تقييم الجودة</strong>
+                </div>
+                <div class="metric-item">
+                    <strong class="metric-value">{{ (perf.response_time_hours) | round(1) }}</strong>
+                    <strong>وقت الاستجابة (ساعة)</strong>
+                </div>
+                <div class="metric-item">
+                    <strong class="metric-value">{{ perf.overall_rating | round(2) }}/5</strong>
+                    <strong>التقييم الإجمالي</strong>
+                </div>
+                <div class="metric-item">
+                    <strong>الحالة</strong>
+                    <strong style="color: {% if perf.is_preferred %}#10b981{% else %}#f59e0b{% endif %};">
+                        {% if perf.is_preferred %}مفضل{% else %}عادي{% endif %}
+                    </strong>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div style="text-align: center; padding: 3rem 1rem; background: #f9fafb; border-radius: 12px;">
+        <div style="font-size: 48px; color: #d1d5db; margin-bottom: 1rem;">
+            <i class="fas fa-inbox"></i>
+        </div>
+        <p style="color: #9ca3af; margin-bottom: 0;">لا توجد بيانات أداء موردين</p>
+    </div>
+    {% endif %}
+
+    <!-- Information -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <i class="fas fa-info-circle"></i> معايير التقييم
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <h6 style="color: #667eea;">
+                        <i class="fas fa-check-circle"></i> التسليم في الموعد
+                    </h6>
+                    <p class="text-muted" style="font-size: 14px;">
+                        نسبة الطلبات التي تم تسليمها في الموعد المتفق عليه
+                    </p>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <h6 style="color: #667eea;">
+                        <i class="fas fa-quality-gates"></i> جودة المنتج
+                    </h6>
+                    <p class="text-muted" style="font-size: 14px;">
+                        تقييم جودة المنتجات والخدمات المقدمة
+                    </p>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <h6 style="color: #667eea;">
+                        <i class="fas fa-clock"></i> سرعة الاستجابة
+                    </h6>
+                    <p class="text-muted" style="font-size: 14px;">
+                        متوسط وقت استجابة المورد للاستفسارات
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

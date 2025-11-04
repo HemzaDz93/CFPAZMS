@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة دفعات حقوق الوجبات{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3">
+                <i class="fas fa-credit-card me-2"></i>إدارة دفعات حقوق الوجبات
+            </h1>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card border-left-warning">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase">المبلغ المعلق</h6>
+                    <h3 class="text-warning">{{ "%.2f"|format(unsettled_total or 0) }} دج</h3>
+                    <small class="text-muted">غير مسدد</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card border-left-success">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase">المبلغ المسدد</h6>
+                    <h3 class="text-success">{{ "%.2f"|format(settled_total or 0) }} دج</h3>
+                    <small class="text-muted">تم تسديده</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card border-left-info">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase">الإجمالي</h6>
+                    <h3 class="text-info">{{ "%.2f"|format((unsettled_total or 0) + (settled_total or 0)) }} دج</h3>
+                    <small class="text-muted">الجميع</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">إجراءات الدفع</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-success me-2" onclick="settleAllPayments()">
+                        <i class="fas fa-check-circle me-2"></i>تسديد جميع الدفعات المعلقة
+                    </button>
+                    <button class="btn btn-info" onclick="toggleFilters()">
+                        <i class="fas fa-filter me-2"></i>تصفية البيانات
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4" id="filters-section" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">خيارات التصفية</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="employee_id" class="form-label">الموظف</label>
+                            <select name="employee_id" id="employee_id" class="form-select">
+                                <option value="">جميع الموظفين</option>
+                                {% for employee in employees %}
+                                <option value="{{ employee.id }}" {% if employee_id == employee.id|string %}selected{% endif %}>
+                                    {{ employee.full_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="status" class="form-label">الحالة</label>
+                            <select name="status" id="status" class="form-select">
+                                <option value="unsettled" {% if status_filter == 'unsettled' %}selected{% endif %}>معلقة</option>
+                                <option value="settled" {% if status_filter == 'settled' %}selected{% endif %}>مسددة</option>
+                                <option value="all" {% if status_filter == 'all' %}selected{% endif %}>الجميع</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>بحث
+                            </button>
+                            <a href="{{ url_for('employee_meals.payments_list') }}" class="btn btn-secondary">
+                                <i class="fas fa-redo me-2"></i>إعادة تعيين
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payments Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>قائمة الدفعات
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>الموظف</th>
+                                    <th>التاريخ</th>
+                                    <th>عدد الوجبات</th>
+                                    <th>التكلفة الأصلية</th>
+                                    <th>السعر النهائي</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in transactions %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ transaction.user.full_name if transaction.user else '-' }}</strong>
+                                    </td>
+                                    <td>{{ transaction.transaction_date.strftime('%d/%m/%Y') if transaction.transaction_date else '-' }}</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary">
+                                            {% set meal_count = (transaction.meal_cost / 2.5)|round(0)|int %}
+                                            {{ meal_count }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">{{ "%.2f"|format(transaction.meal_cost or 0) }} دج</td>
+                                    <td class="text-end">
+                                        <strong>{{ "%.2f"|format(transaction.final_cost or 0) }} دج</strong>
+                                    </td>
+                                    <td>
+                                        {% if transaction.is_settled %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check me-1"></i>مسددة
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-clock me-1"></i>معلقة
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if not transaction.is_settled %}
+                                        <button class="btn btn-sm btn-success" onclick="settlePayment('{{ transaction.id }}', '{{ transaction.user.full_name }}')">
+                                            <i class="fas fa-check me-1"></i>تسديد
+                                        </button>
+                                        {% else %}
+                                        <small class="text-muted">
+                                            تم التسديد: {{ transaction.settlement_date.strftime('%d/%m/%Y') if transaction.settlement_date else '-' }}
+                                        </small>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if pages > 1 %}
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if current_page > 1 %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if employee_id %}&employee_id={{ employee_id }}{% endif %}&status={{ status_filter }}">
+                                    الأولى
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ current_page - 1 }}{% if employee_id %}&employee_id={{ employee_id }}{% endif %}&status={{ status_filter }}">
+                                    السابقة
+                                </a>
+                            </li>
+                            {% endif %}
+
+                            {% for page_num in range(max(1, current_page - 2), min(pages + 1, current_page + 3)) %}
+                                {% if page_num == current_page %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                                {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_num }}{% if employee_id %}&employee_id={{ employee_id }}{% endif %}&status={{ status_filter }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if current_page < pages %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ current_page + 1 }}{% if employee_id %}&employee_id={{ employee_id }}{% endif %}&status={{ status_filter }}">
+                                    التالية
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ pages }}{% if employee_id %}&employee_id={{ employee_id }}{% endif %}&status={{ status_filter }}">
+                                    الأخيرة
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>لا توجد دفعات حتى الآن
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Settlement Modal -->
+<div class="modal fade" id="settlementModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تسديد الدفعة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>هل تريد فعلاً تسديد دفعة الموظف <strong id="employeeName"></strong>؟</p>
+                <div class="mb-3">
+                    <label for="settlementNotes" class="form-label">ملاحظات (اختياري)</label>
+                    <textarea id="settlementNotes" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-success" id="confirmSettlementBtn" onclick="confirmSettlement()">
+                    <i class="fas fa-check me-2"></i>تسديد
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedTransactionId = null;
+
+function toggleFilters() {
+    const filtersSection = document.getElementById('filters-section');
+    if (filtersSection.style.display === 'none') {
+        filtersSection.style.display = 'block';
+    } else {
+        filtersSection.style.display = 'none';
+    }
+}
+
+function settlePayment(transactionId, employeeName) {
+    selectedTransactionId = transactionId;
+    document.getElementById('employeeName').textContent = employeeName;
+    document.getElementById('settlementNotes').value = '';
+    new bootstrap.Modal(document.getElementById('settlementModal')).show();
+}
+
+function confirmSettlement() {
+    if (!selectedTransactionId) return;
+
+    const notes = document.getElementById('settlementNotes').value;
+    const formData = new FormData();
+    formData.append('notes', notes);
+
+    const settleUrl = `/employee-meals/payment/settle/${selectedTransactionId}`;
+    fetch(settleUrl, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message);
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showAlert('danger', data.message || 'حدث خطأ');
+        }
+        bootstrap.Modal.getInstance(document.getElementById('settlementModal')).hide();
+    })
+    .catch(error => {
+        showAlert('danger', 'خطأ: ' + error);
+        bootstrap.Modal.getInstance(document.getElementById('settlementModal')).hide();
+    });
+}
+
+function settleAllPayments() {
+    if (!confirm('هل تريد فعلاً تسديد جميع الدفعات المعلقة؟\nهذا الإجراء نهائي ولا يمكن التراجع عنه.')) {
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('notes', 'دفع جماعي شامل');
+
+    fetch('{{ url_for("employee_meals.settle_all_payments") }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message);
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showAlert('danger', data.message || 'حدث خطأ');
+        }
+    })
+    .catch(error => {
+        showAlert('danger', 'خطأ: ' + error);
+    });
+}
+
+function showAlert(type, message) {
+    // Create and show alert using a more reliable method
+    const alertHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert" id="tempAlert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    if (container) {
+        // Insert at the very beginning of the container
+        container.insertAdjacentHTML('afterbegin', alertHTML);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            const alertEl = document.getElementById('tempAlert');
+            if (alertEl) {
+                alertEl.remove();
+            }
+        }, 5000);
+    }
+}
+</script>
+
+<style>
+.border-left-warning {
+    border-left: 4px solid #f39c12;
+}
+
+.border-left-success {
+    border-left: 4px solid #27ae60;
+}
+
+.border-left-info {
+    border-left: 4px solid #3498db;
+}
+</style>
+{% endblock %}

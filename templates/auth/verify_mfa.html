@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}التحقق من المصادقة الثنائية{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">التحقق من المصادقة الثنائية</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        <div class="form-group mb-4">
+                            <label for="token">رمز المصادقة</label>
+                            <input type="text" 
+                                   id="token"
+                                   name="token"
+                                   class="form-control text-center"
+                                   placeholder="أدخل رمز المصادقة"
+                                   pattern="[0-9]{6}"
+                                   required>
+                            <div class="invalid-feedback">
+                                يرجى إدخال رمز صالح مكون من 6 أرقام
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            تحقق
+                        </button>
+                    </form>
+
+                    <div class="text-center">
+                        <p class="text-muted mb-3">
+                            أو استخدم رمز النسخ الاحتياطي
+                        </p>
+                        
+                        <button class="btn btn-outline-secondary"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#backupCodeForm">
+                            استخدام رمز النسخ الاحتياطي
+                        </button>
+                        
+                        <div class="collapse mt-3" id="backupCodeForm">
+                            <form method="POST" class="needs-validation" novalidate>
+                                <div class="form-group">
+                                    <input type="text" 
+                                           name="backup_code"
+                                           class="form-control text-center"
+                                           placeholder="أدخل رمز النسخ الاحتياطي"
+                                           pattern="[a-f0-9]{8}"
+                                           required>
+                                    <div class="invalid-feedback">
+                                        يرجى إدخال رمز نسخ احتياطي صالح
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-secondary mt-2 w-100">
+                                    استخدام رمز النسخ الاحتياطي
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-light">
+                    <div class="alert alert-info mb-0" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        تأكد من استخدام الرمز المعروض في تطبيق المصادقة الخاص بك
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // التحقق من صحة النماذج
+    const forms = document.querySelectorAll('.needs-validation');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+    });
+    
+    // تنسيق حقل الرمز
+    const tokenInput = document.querySelector('input[name="token"]');
+    tokenInput.addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+    });
+    
+    // تنسيق حقل رمز النسخ الاحتياطي
+    const backupInput = document.querySelector('input[name="backup_code"]');
+    backupInput.addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/[^a-f0-9]/g, '').slice(0, 8);
+    });
+});
+</script>
+{% endblock %}

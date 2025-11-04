@@ -1,0 +1,467 @@
+{% extends "base.html" %}
+
+{% block title %}وصل تسليم - نظام الإدارة{% endblock %}
+
+{% block extra_css %}
+<style>
+    .receipt-container {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        max-width: 800px;
+        margin: 2rem auto;
+        font-family: 'Arial', sans-serif;
+    }
+    
+    .receipt-header {
+        text-align: center;
+        border-bottom: 3px solid #1a3a52;
+        padding-bottom: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .receipt-header h1 {
+        font-size: 1.8rem;
+        margin: 0;
+        color: #1a3a52;
+    }
+    
+    .receipt-header p {
+        margin: 0.3rem 0;
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+    
+    .receipt-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-title {
+        background: #1a3a52;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #1f2937;
+    }
+    
+    .info-value {
+        color: #64748b;
+    }
+    
+    .items-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1rem;
+    }
+    
+    .items-table th {
+        background: #f3f4f6;
+        padding: 0.75rem;
+        text-align: right;
+        font-weight: 700;
+        border-bottom: 2px solid #1a3a52;
+    }
+    
+    .items-table td {
+        padding: 0.75rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .items-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .total-section {
+        display: flex;
+        justify-content: flex-end;
+        margin: 1.5rem 0;
+        gap: 2rem;
+    }
+    
+    .total-item {
+        text-align: center;
+        min-width: 150px;
+    }
+    
+    .total-label {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-bottom: 0.3rem;
+    }
+    
+    .total-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1a3a52;
+    }
+    
+    .signature-section {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 3rem;
+    }
+    
+    .signature-block {
+        text-align: center;
+        min-width: 150px;
+    }
+    
+    .signature-line {
+        border-top: 2px solid #1f2937;
+        width: 100%;
+        margin-bottom: 0.5rem;
+        min-height: 60px;
+    }
+    
+    .signature-label {
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 0.9rem;
+    }
+    
+    .signature-date {
+        color: #64748b;
+        font-size: 0.85rem;
+        margin-top: 0.3rem;
+    }
+    
+    .status-header {
+        background: #dcfce7;
+        border-left: 4px solid #166534;
+        padding: 1rem;
+        border-radius: 4px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .status-header p {
+        margin: 0;
+        color: #166534;
+        font-weight: 600;
+    }
+    
+    .action-buttons {
+        text-align: center;
+        margin-top: 2rem;
+        gap: 1rem;
+    }
+
+    @media print {
+        .btn, .action-buttons {
+            display: none !important;
+        }
+        
+        body {
+            background: white;
+            margin: 0;
+            padding: 0;
+            font-size: 9pt !important;
+        }
+        
+        .receipt-container {
+            box-shadow: none !important;
+            padding: 0.5cm !important;
+            margin: 0 !important;
+            max-width: 100% !important;
+            page-break-inside: avoid !important;
+        }
+
+        .receipt-header {
+            border-bottom: 1px solid #999 !important;
+            padding-bottom: 0.3cm !important;
+            margin-bottom: 0.3cm !important;
+        }
+
+        .receipt-header h1 {
+            font-size: 12pt !important;
+            margin: 0 !important;
+        }
+
+        .receipt-header h3 {
+            font-size: 10pt !important;
+            margin: 0.1cm 0 !important;
+        }
+
+        .receipt-header p {
+            margin: 0.1cm 0 !important;
+            font-size: 8pt !important;
+        }
+
+        .receipt-header hr {
+            margin: 0.2cm 0 !important;
+        }
+
+        .receipt-section {
+            margin-bottom: 0.3cm !important;
+            page-break-inside: avoid !important;
+        }
+
+        .section-title {
+            background: #ddd !important;
+            color: #000 !important;
+            padding: 0.2cm 0.3cm !important;
+            border-radius: 0 !important;
+            font-weight: bold !important;
+            margin-bottom: 0.15cm !important;
+            font-size: 9pt !important;
+        }
+
+        .info-row {
+            padding: 0.1cm 0 !important;
+            border-bottom: 0.5px solid #ddd !important;
+            font-size: 8pt !important;
+        }
+
+        .info-label {
+            font-weight: bold !important;
+        }
+
+        .status-header {
+            background: white !important;
+            border-left: 1px solid #999 !important;
+            padding: 0.2cm !important;
+            margin-bottom: 0.2cm !important;
+        }
+
+        .status-header p {
+            margin: 0 !important;
+            font-size: 8pt !important;
+        }
+
+        .items-table {
+            font-size: 7pt !important;
+            margin-bottom: 0.3cm !important;
+        }
+
+        .items-table th {
+            background: #ddd !important;
+            padding: 0.1cm !important;
+            font-weight: bold !important;
+            border-bottom: 0.5px solid #999 !important;
+        }
+
+        .items-table td {
+            padding: 0.1cm !important;
+            border-bottom: 0.5px solid #ccc !important;
+        }
+
+        .total-section {
+            margin: 0.3cm 0 !important;
+            gap: 0.5cm !important;
+        }
+
+        .total-item {
+            min-width: auto !important;
+            flex: 1 !important;
+        }
+
+        .total-label {
+            font-size: 7pt !important;
+            margin-bottom: 0.05cm !important;
+        }
+
+        .total-value {
+            font-size: 10pt !important;
+        }
+
+        .signature-section {
+            margin-top: 0.5cm !important;
+        }
+
+        .signature-block {
+            min-width: auto !important;
+            flex: 1 !important;
+        }
+
+        .signature-line {
+            min-height: 30px !important;
+            margin-bottom: 0.2cm !important;
+        }
+
+        .signature-label {
+            font-size: 7pt !important;
+        }
+
+        .signature-date {
+            font-size: 7pt !important;
+            margin-top: 0.1cm !important;
+        }
+
+        .receipt-section p {
+            margin: 0 !important;
+            font-size: 8pt !important;
+        }
+
+        div[style*="text-align: center"] {
+            font-size: 7pt !important;
+            margin-top: 0.3cm !important;
+            padding-top: 0.2cm !important;
+            border-top: 0.5px solid #ddd !important;
+        }
+
+        div[style*="text-align: center"] p {
+            margin: 0.05cm 0 !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="action-buttons">
+    <button onclick="window.print()" class="btn btn-primary">
+        <i class="fas fa-print"></i> طباعة
+    </button>
+    <button onclick="window.history.back()" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> عودة
+    </button>
+</div>
+
+<div class="receipt-container">
+    <!-- الرأس -->
+    <div class="receipt-header">
+        {% if org_settings %}
+        <h1>{{ org_settings.ministry_name }}</h1>
+        <p>{{ org_settings.directorate_name }}</p>
+        <p>{{ org_settings.institution_name }}</p>
+        {% endif %}
+        <hr>
+        <h3 style="margin: 1rem 0 0 0;">وصل تسليم المنتجات</h3>
+    </div>
+
+    <!-- رسالة الموافقة -->
+    {% if request.status == 'approved' %}
+    <div class="status-header">
+        <p>✓ تمت الموافقة على هذا الطلب</p>
+    </div>
+    {% endif %}
+
+    <!-- معلومات الطلب -->
+    <div class="receipt-section">
+        <div class="section-title">معلومات الطلب</div>
+        <div class="info-row">
+            <span class="info-label">رقم الطلب:</span>
+            <span class="info-value"><strong>{{ request.request_number }}</strong></span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">تاريخ الطلب:</span>
+            <span class="info-value">{{ request.request_date.strftime('%d-%m-%Y %H:%M') }}</span>
+        </div>
+        {% if request.approval_date %}
+        <div class="info-row">
+            <span class="info-label">تاريخ الموافقة:</span>
+            <span class="info-value">{{ request.approval_date.strftime('%d-%m-%Y %H:%M') }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- معلومات المستخدمين -->
+    <div class="receipt-section">
+        <div class="section-title">الأطراف المعنية</div>
+        <div class="info-row">
+            <span class="info-label">الموظف الطالب:</span>
+            <span class="info-value">{{ request.requested_by.full_name }}</span>
+        </div>
+        {% if request.approved_by %}
+        <div class="info-row">
+            <span class="info-label">وافق بواسطة:</span>
+            <span class="info-value">{{ request.approved_by.full_name }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- جدول المنتجات -->
+    <div class="receipt-section">
+        <div class="section-title">تفاصيل المنتجات</div>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%">م</th>
+                    <th style="width: 40%">المنتج</th>
+                    <th style="width: 15%">الكود</th>
+                    <th style="width: 15%">الكمية</th>
+                    <th style="width: 15%">السعر</th>
+                    <th style="width: 15%">الإجمالي</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in request.items %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ item.item.name }}</td>
+                    <td>{{ item.item.code }}</td>
+                    <td>{{ item.quantity }} {{ item.item.unit }}</td>
+                    <td>{{ "%.3f"|format(item.unit_price or 0) }} د.ت</td>
+                    <td>{{ "%.3f"|format(item.total_price) }} د.ت</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- الملخص المالي -->
+    <div class="total-section">
+        <div class="total-item">
+            <div class="total-label">الكمية الإجمالية</div>
+            <div class="total-value">{{ request.total_quantity }}</div>
+        </div>
+        <div class="total-item">
+            <div class="total-label">المجموع</div>
+            <div class="total-value">{{ "%.3f"|format(request.total_cost) }} د.ت</div>
+        </div>
+    </div>
+
+    <!-- ملاحظات -->
+    {% if request.notes %}
+    <div class="receipt-section">
+        <div class="section-title">ملاحظات</div>
+        <p>{{ request.notes }}</p>
+    </div>
+    {% endif %}
+
+    <!-- التواقيع -->
+    <div class="signature-section">
+        <div class="signature-block">
+            <div class="signature-line"></div>
+            <div class="signature-label">توقيع الموظف</div>
+            <div class="signature-date">
+                {% if request.employee_signature_date %}
+                {{ request.employee_signature_date.strftime('%d-%m-%Y %H:%M') }}
+                {% else %}
+                التاريخ: _______________
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="signature-block">
+            <div class="signature-line"></div>
+            <div class="signature-label">توقيع المسؤول</div>
+            <div class="signature-date">
+                {% if request.approver_signature_date %}
+                {{ request.approver_signature_date.strftime('%d-%m-%Y %H:%M') }}
+                {% else %}
+                التاريخ: _______________
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- القدم -->
+    <div style="text-align: center; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; color: #9ca3af; font-size: 0.85rem;">
+        <p>تم إصدار هذا الوصل من نظام إدارة المخزون</p>
+        <p>{{ request.created_at.strftime('%d-%m-%Y') }}</p>
+    </div>
+</div>
+{% endblock %}

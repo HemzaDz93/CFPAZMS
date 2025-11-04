@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة الوصفات - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    .page-header-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .page-header-section .page-title {
+        color: white;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        font-size: 2rem;
+    }
+
+    .page-header-section .page-title i {
+        margin-left: 1rem;
+        font-size: 2.2rem;
+    }
+
+    .recipe-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        overflow: hidden;
+        height: 100%;
+        position: relative;
+    }
+
+    .recipe-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .recipe-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 30px rgba(102, 126, 234, 0.2);
+    }
+
+    .recipe-card .card-title {
+        color: #667eea;
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: 0.3px;
+        margin-bottom: 0.8rem;
+    }
+
+    .recipe-card .card-text {
+        color: #6b7280;
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+
+    .recipe-card .badge {
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .recipe-card .badge.bg-secondary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .recipe-card h6 {
+        color: #667eea;
+        font-weight: 700;
+        margin-top: 1rem;
+        margin-bottom: 0.8rem;
+        font-size: 0.95rem;
+    }
+
+    .recipe-card ul {
+        color: #6b7280;
+        padding-right: 1.5rem;
+    }
+
+    .recipe-card ul li {
+        margin-bottom: 0.4rem;
+        font-size: 0.9rem;
+    }
+
+    .recipe-card .card-footer {
+        padding: 1rem;
+        background: #f9fafb;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .recipe-card .btn-edit {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .recipe-card .btn-edit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .search-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+    }
+
+    .search-card .form-control,
+    .search-card .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .search-card .form-control:focus,
+    .search-card .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-state i {
+        color: #667eea;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state p {
+        color: #6b7280;
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="page-header-section d-flex justify-content-between align-items-center">
+        <h1 class="page-title mb-0">
+            <i class="fas fa-book"></i> إدارة الوصفات
+        </h1>
+        <a href="{{ url_for('restaurant.add_recipe') }}" class="btn btn-light" style="color: #667eea; font-weight: 600;">
+            <i class="fas fa-plus"></i> وصفة جديدة
+        </a>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card search-card mb-3">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-6">
+                    <input type="text" name="search" class="form-control" placeholder="ابحث بالاسم أو الكود..."
+                           value="{{ request.args.get('search', '') }}">
+                </div>
+                <div class="col-md-2 text-end">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-search"></i> بحث
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Recipes Grid -->
+    <div class="row">
+        {% if recipes %}
+            {% for recipe in recipes %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card recipe-card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ recipe.name }}</h5>
+                        <p class="card-text">{{ recipe.description or '' }}</p>
+                        
+                        <div class="mb-3">
+                            <span class="badge bg-secondary">الحصص: {{ recipe.servings }}</span>
+                        </div>
+
+                        <h6>المكونات:</h6>
+                        <ul class="small">
+                            {% for ingredient in recipe.ingredients %}
+                            <li>{{ ingredient.item.name }}: {{ ingredient.quantity }} {{ ingredient.unit }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('restaurant.edit_recipe', recipe_id=recipe.id) }}" 
+                           class="btn btn-sm btn-edit w-100" title="تعديل">
+                            <i class="fas fa-edit"></i> تعديل
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="col-12">
+            <div class="card empty-state">
+                <i class="fas fa-inbox fa-3x"></i>
+                <p class="mt-3">لا توجد وصفات في النظام</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% if pages > 1 %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if current_page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1">الأولى</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ current_page - 1 }}">السابقة</a>
+            </li>
+            {% endif %}
+            
+            {% for page_num in range(1, pages + 1) %}
+                {% if page_num == current_page %}
+                <li class="page-item active">
+                    <span class="page-link">{{ page_num }}</span>
+                </li>
+                {% else %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if current_page < pages %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ current_page + 1 }}">التالية</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ pages }}">الأخيرة</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

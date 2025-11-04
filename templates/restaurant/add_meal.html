@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}تسجيل وجبة جديدة - نظام الإدارة{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="page-title">
+                <i class="fas fa-plus-circle"></i> تسجيل وجبة جديدة
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-utensils"></i> بيانات الوجبة
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="meal_date" class="form-label">التاريخ والوقت <span class="text-danger">*</span></label>
+                                <input type="datetime-local" class="form-control" id="meal_date" name="meal_date" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="meal_type" class="form-label">نوع الوجبة <span class="text-danger">*</span></label>
+                                <select class="form-select" id="meal_type" name="meal_type" required>
+                                    <option value="">-- اختر نوع الوجبة --</option>
+                                    <option value="breakfast">إفطار</option>
+                                    <option value="lunch">غداء</option>
+                                    <option value="dinner">عشاء</option>
+                                    <option value="snack">وجبة خفيفة</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="recipe_id" class="form-label">الوصفة <span class="text-danger">*</span></label>
+                                <select class="form-select" id="recipe_id" name="recipe_id" required>
+                                    <option value="">-- اختر الوصفة --</option>
+                                    {% for recipe in recipes %}
+                                    <option value="{{ recipe.id }}" 
+                                            data-serving="{{ recipe.servings }}">
+                                        {{ recipe.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="servings" class="form-label">عدد الحصص <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="servings" name="servings" required 
+                                       min="1" placeholder="0">
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>عدد الحصص في الوصفة:</strong> <span id="recipe_serving">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">ملاحظات</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                      placeholder="أي ملاحظات عن الوجبة..."></textarea>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <h5 class="alert-heading">تنبيه مهم</h5>
+                            <p>تأكد من أن جميع المكونات متوفرة في المخزن قبل تسجيل الوجبة. سيتم خصم المكونات من المخزون تلقائياً.</p>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> تسجيل الوجبة
+                            </button>
+                            <a href="{{ url_for('restaurant.meals') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const recipeSelect = document.getElementById('recipe_id');
+    const servingSpan = document.getElementById('recipe_serving');
+
+    recipeSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const serving = selectedOption.dataset.serving || '-';
+        
+        servingSpan.textContent = serving;
+    });
+
+    // Set current date and time
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('meal_date').value = now.toISOString().slice(0, 16);
+});
+</script>
+{% endblock %}

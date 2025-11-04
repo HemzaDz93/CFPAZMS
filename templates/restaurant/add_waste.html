@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}تسجيل فاقد/هدر جديد{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-trash"></i> تسجيل فاقد وهدر غذائي جديد</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <!-- تاريخ الفاقد -->
+                        <div class="mb-3">
+                            <label for="waste_date" class="form-label">تاريخ التسجيل *</label>
+                            <input type="date" id="waste_date" name="waste_date" class="form-control" required value="{{ request.form.get('waste_date', '') or today }}">
+                        </div>
+
+                        <!-- اختيار النوع -->
+                        <div class="mb-3">
+                            <label class="form-label">نوع الفاقد *</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="waste_type" id="waste_item" value="item" onclick="toggleWasteType('item')">
+                                <label class="btn btn-outline-primary" for="waste_item">صنف</label>
+                                
+                                <input type="radio" class="btn-check" name="waste_type" id="waste_recipe" value="recipe" onclick="toggleWasteType('recipe')">
+                                <label class="btn btn-outline-primary" for="waste_recipe">وصفة</label>
+                                
+                                <input type="radio" class="btn-check" name="waste_type" id="waste_meal" value="meal" onclick="toggleWasteType('meal')">
+                                <label class="btn btn-outline-primary" for="waste_meal">وجبة</label>
+                            </div>
+                        </div>
+
+                        <!-- الصنف -->
+                        <div class="mb-3" id="item-section" style="display:none;">
+                            <label for="item_id" class="form-label">الصنف</label>
+                            <select id="item_id" name="item_id" class="form-select">
+                                <option value="">-- اختر صنفاً --</option>
+                                {% for item in items %}
+                                <option value="{{ item.id }}" data-price="{{ item.unit_price or 0 }}">
+                                    {{ item.code }} - {{ item.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- الوصفة -->
+                        <div class="mb-3" id="recipe-section" style="display:none;">
+                            <label for="recipe_id" class="form-label">الوصفة</label>
+                            <select id="recipe_id" name="recipe_id" class="form-select">
+                                <option value="">-- اختر وصفة --</option>
+                                {% for recipe in recipes %}
+                                <option value="{{ recipe.id }}">{{ recipe.code }} - {{ recipe.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- الوجبة -->
+                        <div class="mb-3" id="meal-section" style="display:none;">
+                            <label for="meal_record_id" class="form-label">الوجبة</label>
+                            <select id="meal_record_id" name="meal_record_id" class="form-select">
+                                <option value="">-- اختر وجبة --</option>
+                                {% for meal in meal_records %}
+                                <option value="{{ meal.id }}">
+                                    {{ meal.record_date }} - {{ meal.meal_type }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- سبب الفاقد -->
+                        <div class="mb-3">
+                            <label for="waste_reason" class="form-label">سبب الفاقد *</label>
+                            <select id="waste_reason" name="waste_reason" class="form-select" required>
+                                <option value="">-- اختر السبب --</option>
+                                <option value="spoilage">تلف</option>
+                                <option value="overproduction">إنتاج زائد</option>
+                                <option value="quality_issue">مشكلة جودة</option>
+                                <option value="expired">انتهاء الصلاحية</option>
+                                <option value="accident">حادث</option>
+                                <option value="other">أخرى</option>
+                            </select>
+                        </div>
+
+                        <!-- الكمية -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="quantity_wasted" class="form-label">الكمية المهدرة *</label>
+                                <input type="number" id="quantity_wasted" name="quantity_wasted" class="form-control" 
+                                       step="0.01" required onchange="calculateWasteValue()">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="unit" class="form-label">الوحدة *</label>
+                                <input type="text" id="unit" name="unit" class="form-control" placeholder="كغ، لتر، قطعة..." required>
+                            </div>
+                        </div>
+
+                        <!-- التكلفة المقدرة -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="estimated_unit_cost" class="form-label">سعر الوحدة (د.ج) *</label>
+                                <input type="number" id="estimated_unit_cost" name="estimated_unit_cost" class="form-control" 
+                                       step="0.01" required value="0" onchange="calculateWasteValue()">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">القيمة الإجمالية (د.ج)</label>
+                                <div class="input-group">
+                                    <input type="number" id="total_waste_value" class="form-control" step="0.01" disabled>
+                                    <span class="input-group-text">د.ج</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- الوصف -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label">الوصف التفصيلي</label>
+                            <textarea id="description" name="description" class="form-control" rows="3" 
+                                      placeholder="صف الفاقد والظروف المحيطة..."></textarea>
+                        </div>
+
+                        <!-- أزرار -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('restaurant_advanced.waste_list') }}" class="btn btn-secondary">إلغاء</a>
+                            <button type="submit" class="btn btn-primary">تسجيل الفاقد</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleWasteType(type) {
+    document.getElementById('item-section').style.display = type === 'item' ? 'block' : 'none';
+    document.getElementById('recipe-section').style.display = type === 'recipe' ? 'block' : 'none';
+    document.getElementById('meal-section').style.display = type === 'meal' ? 'block' : 'none';
+}
+
+function calculateWasteValue() {
+    const quantity = parseFloat(document.getElementById('quantity_wasted').value) || 0;
+    const unitCost = parseFloat(document.getElementById('estimated_unit_cost').value) || 0;
+    const total = quantity * unitCost;
+    document.getElementById('total_waste_value').value = total.toFixed(2);
+}
+
+// عند تغيير الصنف، تحديث السعر
+document.getElementById('item_id').addEventListener('change', function() {
+    const option = this.options[this.selectedIndex];
+    const price = option.getAttribute('data-price');
+    if (price) {
+        document.getElementById('estimated_unit_cost').value = price;
+        calculateWasteValue();
+    }
+});
+
+// ضبط التاريخ الافتراضي
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('waste_date').value = today;
+});
+</script>
+
+<style>
+.btn-group .btn-check:checked + .btn {
+    background-color: #1a3a52;
+    color: white;
+    border-color: #1a3a52;
+}
+</style>
+
+{% endblock %}

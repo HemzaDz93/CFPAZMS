@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}التقرير اليومي - نظام الإدارة{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h1 class="page-title">
+                <i class="fas fa-chart-pie"></i> التقرير اليومي
+            </h1>
+        </div>
+        <div class="col-md-6 text-end">
+            <button class="btn btn-outline-success" onclick="window.print();">
+                <i class="fas fa-print"></i> طباعة
+            </button>
+        </div>
+    </div>
+
+    <!-- Date Selector -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">اختر التاريخ</label>
+                    <input type="date" name="date" class="form-control" value="{{ meal_date.isoformat() }}">
+                </div>
+                <div class="col-md-3 pt-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> بحث
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Meals Summary -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-utensils"></i> الوجبات المسجلة - {{ meal_date.strftime('%d/%m/%Y') }}
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>نوع الوجبة</th>
+                        <th>الوصفة</th>
+                        <th>عدد الحصص</th>
+                        <th>التكلفة المتوقعة</th>
+                        <th>الملاحظات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if meals %}
+                        {% for meal in meals %}
+                        <tr>
+                            <td>
+                                {% if meal.meal_type == 'breakfast' %}
+                                <span class="badge bg-warning">إفطار</span>
+                                {% elif meal.meal_type == 'lunch' %}
+                                <span class="badge bg-info">غداء</span>
+                                {% elif meal.meal_type == 'dinner' %}
+                                <span class="badge bg-secondary">عشاء</span>
+                                {% elif meal.meal_type == 'snack' %}
+                                <span class="badge bg-primary">وجبة خفيفة</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ meal.recipe.name }}</strong>
+                            </td>
+                            <td class="text-end">{{ meal.servings }}</td>
+                            <td class="text-end">{{ "%.2f"|format(meal.expected_cost or 0) }} دج</td>
+                            <td>
+                                <small class="text-muted">{{ meal.notes or '-' }}</small>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">
+                            لا توجد وجبات مسجلة لهذا اليوم
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Total Consumption Summary -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-cubes"></i> إجمالي الأصناف المستهلكة
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>الصنف</th>
+                        <th class="text-end">الكمية</th>
+                        <th>الوحدة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if total_consumption %}
+                        {% for consumption in total_consumption %}
+                        <tr>
+                            <td>
+                                <strong>{{ consumption.item.name }}</strong><br>
+                                <small class="text-muted">{{ consumption.item.code }}</small>
+                            </td>
+                            <td class="text-end">{{ "%.2f"|format(consumption.quantity) }}</td>
+                            <td>{{ consumption.unit }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center py-4 text-muted">
+                            لا توجد أصناف مستهلكة
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .btn-outline-success {
+            display: none;
+        }
+        .card {
+            page-break-inside: avoid;
+        }
+    }
+</style>
+{% endblock %}

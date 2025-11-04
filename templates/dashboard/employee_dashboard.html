@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة التحكم الموظفين - نظام الإدارة{% endblock %}
+
+{% block extra_css %}
+<style>
+    .employee-welcome {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+        padding: 2.5rem;
+        border-radius: 16px;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        margin-bottom: 2.5rem;
+    }
+    
+    .employee-welcome h1 {
+        margin: 0;
+        color: #3b82f6;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .employee-welcome .user-info {
+        margin-top: 1rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+    
+    .modules-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2.5rem;
+    }
+    
+    .module-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+        border: 2px solid rgba(59, 130, 246, 0.1);
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.08);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .module-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 35px rgba(59, 130, 246, 0.2);
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+    
+    .module-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .module-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        flex-shrink: 0;
+    }
+    
+    .module-card.info .module-icon {
+        background: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+    }
+    
+    .module-card.success .module-icon {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+    }
+    
+    .module-card.warning .module-icon {
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+    }
+    
+    .module-card.danger .module-icon {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+    }
+    
+    .module-card.primary .module-icon {
+        background: rgba(168, 85, 247, 0.15);
+        color: #a855f7;
+    }
+    
+    .module-card.secondary .module-icon {
+        background: rgba(100, 116, 139, 0.15);
+        color: #64748b;
+    }
+    
+    .module-title {
+        flex: 1;
+    }
+    
+    .module-title h3 {
+        margin: 0 0 0.25rem 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+    
+    .module-badge {
+        font-size: 0.75rem;
+        color: #64748b;
+        background: rgba(59, 130, 246, 0.1);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        white-space: nowrap;
+    }
+    
+    .module-body {
+        padding: 1.5rem;
+        flex: 1;
+    }
+    
+    .module-links {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .module-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.9rem 1.2rem;
+        border-radius: 10px;
+        text-decoration: none;
+        color: #475569;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+    }
+    
+    .module-card.info .module-link {
+        background: rgba(59, 130, 246, 0.08);
+        border-color: rgba(59, 130, 246, 0.15);
+    }
+    
+    .module-card.info .module-link:hover {
+        background: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+        transform: translateX(4px);
+    }
+    
+    .module-card.success .module-link {
+        background: rgba(16, 185, 129, 0.08);
+        border-color: rgba(16, 185, 129, 0.15);
+    }
+    
+    .module-card.success .module-link:hover {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+        transform: translateX(4px);
+    }
+    
+    .module-card.warning .module-link {
+        background: rgba(245, 158, 11, 0.08);
+        border-color: rgba(245, 158, 11, 0.15);
+    }
+    
+    .module-card.warning .module-link:hover {
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+        transform: translateX(4px);
+    }
+    
+    .module-card.danger .module-link {
+        background: rgba(239, 68, 68, 0.08);
+        border-color: rgba(239, 68, 68, 0.15);
+    }
+    
+    .module-card.danger .module-link:hover {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        transform: translateX(4px);
+    }
+    
+    .module-card.primary .module-link {
+        background: rgba(168, 85, 247, 0.08);
+        border-color: rgba(168, 85, 247, 0.15);
+    }
+    
+    .module-card.primary .module-link:hover {
+        background: rgba(168, 85, 247, 0.15);
+        color: #a855f7;
+        transform: translateX(4px);
+    }
+    
+    .module-card.secondary .module-link {
+        background: rgba(100, 116, 139, 0.08);
+        border-color: rgba(100, 116, 139, 0.15);
+    }
+    
+    .module-card.secondary .module-link:hover {
+        background: rgba(100, 116, 139, 0.15);
+        color: #64748b;
+        transform: translateX(4px);
+    }
+    
+    .module-link-icon {
+        width: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .module-link-text {
+        flex: 1;
+    }
+    
+    .module-link-arrow {
+        opacity: 0;
+        transition: all 0.3s ease;
+        transform: translateX(-4px);
+    }
+    
+    .module-link:hover .module-link-arrow {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-box {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid rgba(59, 130, 246, 0.1);
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.05);
+    }
+    
+    .stat-box-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #3b82f6;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-box-label {
+        font-size: 0.9rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: white;
+        border-radius: 16px;
+        border: 2px dashed rgba(59, 130, 246, 0.2);
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        color: rgba(59, 130, 246, 0.3);
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state-text {
+        color: #64748b;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-state-subtext {
+        color: #94a3b8;
+        font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+        .modules-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .employee-welcome {
+            padding: 1.5rem;
+        }
+        
+        .employee-welcome h1 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Welcome Section -->
+    <div class="employee-welcome">
+        <h1>
+            <i class="fas fa-user-circle"></i> مرحباً {{ current_user.first_name }} {{ current_user.last_name }}
+        </h1>
+        <div class="user-info">
+            <div><strong>المركز:</strong> {{ current_user.position or 'غير محدد' }}</div>
+            <div><strong>القسم:</strong> {{ current_user.department or 'غير محدد' }}</div>
+            {% if org_settings %}
+            <div style="margin-top: 0.5rem; opacity: 0.8;">
+                <strong>{{ org_settings.institution_name }}</strong>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Statistics Row -->
+    <div class="stats-row">
+        <div class="stat-box">
+            <div class="stat-box-value">{{ stats.modules_count }}</div>
+            <div class="stat-box-label">عدد الوحدات المتاحة</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-box-value">{{ stats.permissions_count }}</div>
+            <div class="stat-box-label">الصلاحيات الممنوحة</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-box-value">{{ stats.total_links }}</div>
+            <div class="stat-box-label">عدد الخيارات المتاحة</div>
+        </div>
+    </div>
+
+    <!-- Modules Section -->
+    {% if allowed_modules %}
+    <h2 style="margin-bottom: 1.5rem; color: #1e293b;">
+        <i class="fas fa-th"></i> الوحدات المتاحة لك
+    </h2>
+    
+    <div class="modules-grid">
+        {% for module in allowed_modules %}
+        <div class="module-card {{ module.color }}">
+            <!-- Module Header -->
+            <div class="module-header">
+                <div class="module-icon">
+                    <i class="{{ module.icon }}"></i>
+                </div>
+                <div class="module-title">
+                    <h3>{{ module.name }}</h3>
+                    <span class="module-badge">
+                        <i class="fas fa-link"></i> {{ module.link_count }} خيار
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Module Links -->
+            <div class="module-body">
+                <div class="module-links">
+                    {% for link in module.links %}
+                    <a href="{{ url_for(link.url) }}" class="module-link" title="{{ link.title }}">
+                        <div class="module-link-icon">
+                            <i class="{{ link.icon }}"></i>
+                        </div>
+                        <div class="module-link-text">
+                            {{ link.title }}
+                        </div>
+                        <div class="module-link-arrow">
+                            <i class="fas fa-arrow-left"></i>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i class="fas fa-lock"></i>
+        </div>
+        <div class="empty-state-text">
+            لا توجد صلاحيات متاحة لك حالياً
+        </div>
+        <div class="empty-state-subtext">
+            يرجى التواصل مع مدير النظام للحصول على الصلاحيات اللازمة
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Help -->
+    <div style="margin-top: 3rem; padding: 2rem; background: rgba(59, 130, 246, 0.05); border-radius: 12px; border-left: 4px solid #3b82f6;">
+        <h5 style="color: #3b82f6; margin-top: 0;">
+            <i class="fas fa-lightbulb"></i> نصيحة مفيدة
+        </h5>
+        <p style="margin-bottom: 0; color: #64748b;">
+            استخدم الأيقونات والروابط أعلاه للوصول السريع إلى الأنشطة المسموح بها لك. جميع الخيارات تم تخصيصها حسب صلاحياتك.
+        </p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% block title %}سجل وجبات الموظفين{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="page-title">📋 سجل وجبات الموظفين</h2>
+            <p class="text-muted">عرض وتتبع جميع عمليات استهلاك الموظفين للوجبات</p>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- التصفية والبحث -->
+    <div class="card shadow-sm mb-4 border-0">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">الموظف</label>
+                    <select class="form-select" name="employee_id">
+                        <option value="">-- جميع الموظفين --</option>
+                        {% for emp in employees %}
+                            <option value="{{ emp.id }}" {% if emp.id == employee_id %}selected{% endif %}>
+                                {{ emp.full_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">الشهر</label>
+                    <input type="month" class="form-control" name="month" value="{{ month }}">
+                </div>
+
+                <div class="col-md-4 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1">
+                        <i class="bi bi-funnel"></i> تطبيق التصفية
+                    </button>
+                    <a href="{{ url_for('employee_meals.meals_list') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- جدول السجلات -->
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>الموظف</th>
+                        <th>المنصب</th>
+                        <th>عدد الوجبات</th>
+                        <th>التكلفة</th>
+                        <th>الحالة</th>
+                        <th>الملاحظات</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if transactions %}
+                        {% for trans in transactions %}
+                            <tr>
+                                <td>
+                                    <small>{{ trans.transaction_date.strftime('%d/%m/%Y') }}</small>
+                                </td>
+                                <td>
+                                    <strong>{{ trans.user.full_name }}</strong>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ trans.user.position or trans.user.role }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ (trans.meal_cost / 2.5) | int }}</span>
+                                </td>
+                                <td>
+                                    <strong class="text-success">{{ "%.2f"|format(trans.final_cost) }} دج</strong>
+                                </td>
+                                <td>
+                                    {% if trans.is_settled %}
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i> مدفوعة
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning">
+                                            <i class="bi bi-hourglass-split"></i> معلقة
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small>{{ trans.notes[:30] if trans.notes else '-' }}</small>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="عرض التفاصيل">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                <i class="bi bi-inbox"></i> لا توجد سجلات
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- الترقيم -->
+    {% if pages > 1 %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if current_page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if employee_id %}&employee_id={{ employee_id }}{% endif %}{% if month %}&month={{ month }}{% endif %}">الأولى</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ current_page - 1 }}{% if employee_id %}&employee_id={{ employee_id }}{% endif %}{% if month %}&month={{ month }}{% endif %}">السابقة</a>
+                    </li>
+                {% endif %}
+
+                {% for page_num in range(max(1, current_page - 2), min(pages + 1, current_page + 3)) %}
+                    <li class="page-item {% if page_num == current_page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ page_num }}{% if employee_id %}&employee_id={{ employee_id }}{% endif %}{% if month %}&month={{ month }}{% endif %}">{{ page_num }}</a>
+                    </li>
+                {% endfor %}
+
+                {% if current_page < pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ current_page + 1 }}{% if employee_id %}&employee_id={{ employee_id }}{% endif %}{% if month %}&month={{ month }}{% endif %}">التالية</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ pages }}{% if employee_id %}&employee_id={{ employee_id }}{% endif %}{% if month %}&month={{ month }}{% endif %}">الأخيرة</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+
+    <!-- أزرار العودة -->
+    <div class="row mt-4">
+        <div class="col-md-8 mx-auto">
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a href="{{ url_for('employee_meals.daily_registration') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> تسجيل وجبات جديدة
+                </a>
+                <a href="{{ url_for('employee_meals.monthly_report') }}" class="btn btn-info">
+                    <i class="bi bi-file-earmark-pdf"></i> التقرير الشهري
+                </a>
+                <a href="{{ url_for('employee_meals.alerts_list') }}" class="btn btn-warning">
+                    <i class="bi bi-bell"></i> التنبيهات
+                </a>
+                <a href="{{ url_for('restaurant.meals') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> رجوع
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

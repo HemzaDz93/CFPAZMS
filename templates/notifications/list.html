@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+
+{% block title %}الإشعارات - نظام إدارة المؤسسات{% endblock %}
+
+{% block content %}
+{% set current_time = utcnow() %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="page-title">
+                <i class="fas fa-bell"></i> الإشعارات
+            </h1>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if stats.unread > 0 %}
+            <button class="btn btn-sm btn-primary" id="markAllReadBtn">
+                <i class="fas fa-check-double"></i> تحديد الكل كمقروء
+            </button>
+            {% endif %}
+            {% if stats.total > 0 %}
+            <button class="btn btn-sm btn-danger" id="clearAllBtn">
+                <i class="fas fa-trash"></i> حذف الكل
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- إحصائيات الإشعارات -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h5 class="card-title">إجمالي الإشعارات</h5>
+                    <h2 class="text-primary">{{ stats.total }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h5 class="card-title">غير مقروءة</h5>
+                    <h2 class="text-warning">{{ stats.unread }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h5 class="card-title">مقروءة</h5>
+                    <h2 class="text-success">{{ stats.read }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h5 class="card-title">أقدم إشعار</h5>
+                    {% if stats.total > 0 %}
+                    <p class="text-muted mb-0">
+                        {% set oldest = notifications.items|first %}
+                        {% if oldest %}
+                            منذ {{ (current_time - oldest.created_at).days }} يوم
+                        {% endif %}
+                    </p>
+                    {% else %}
+                    <p class="text-muted mb-0">لا توجد إشعارات</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- فلاتر الإشعارات -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="btn-group" role="group">
+                <a href="{{ url_for('notifications.list_notifications', filter='all') }}" 
+                   class="btn btn-outline-primary {% if filter_type == 'all' %}active{% endif %}">
+                    <i class="fas fa-list"></i> الكل ({{ stats.total }})
+                </a>
+                <a href="{{ url_for('notifications.list_notifications', filter='unread') }}" 
+                   class="btn btn-outline-warning {% if filter_type == 'unread' %}active{% endif %}">
+                    <i class="fas fa-circle"></i> غير مقروءة ({{ stats.unread }})
+                </a>
+                <a href="{{ url_for('notifications.list_notifications', filter='read') }}" 
+                   class="btn btn-outline-success {% if filter_type == 'read' %}active{% endif %}">
+                    <i class="fas fa-check-circle"></i> مقروءة ({{ stats.read }})
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- قائمة الإشعارات -->
+    <div class="card">
+        <div class="card-body">
+            {% if notifications.items %}
+                <div class="notification-list">
+                    {% for notification in notifications.items %}
+                    <div class="notification-item {% if not notification.is_read %}unread{% endif %}" 
+                         id="notification-{{ notification.id }}" 
+                         style="padding: 1rem; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: start;">
+                        
+                        <div style="flex: 1; cursor: pointer;" onclick="markAsRead('{{ notification.id }}')">
+                            <!-- أيقونة نوع الإشعار -->
+                            <div style="display: flex; align-items: start; gap: 1rem;">
+                                <div style="font-size: 1.5rem; min-width: 2rem;">
+                                    {% if notification.notification_type == 'success' %}
+                                        <i class="fas fa-check-circle" style="color: #27ae60;"></i>
+                                    {% elif notification.notification_type == 'warning' %}
+                                        <i class="fas fa-exclamation-circle" style="color: #f39c12;"></i>
+                                    {% elif notification.notification_type == 'error' %}
+                                        <i class="fas fa-times-circle" style="color: #e74c3c;"></i>
+                                    {% else %}
+                                        <i class="fas fa-info-circle" style="color: #3498db;"></i>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- محتوى الإشعار -->
+                                <div style="flex: 1;">
+                                    <h6 class="mb-1">
+                                        {% if notification.title %}
+                                            <strong>{{ notification.title }}</strong>
+                                        {% else %}
+                                            <strong>إشعار جديد</strong>
+                                        {% endif %}
+                                        {% if not notification.is_read %}
+                                            <span class="badge bg-danger" style="margin-right: 0.5rem;">جديد</span>
+                                        {% endif %}
+                                    </h6>
+                                    <p class="text-muted mb-1">{{ notification.message }}</p>
+                                    <small class="text-secondary">
+                                        <i class="fas fa-clock"></i>
+                                        {% set time_delta = current_time - notification.created_at %}
+                                        {% if time_delta.days > 0 %}
+                                            منذ {{ time_delta.days }} يوم
+                                        {% elif (time_delta.seconds // 3600) > 0 %}
+                                            منذ {{ time_delta.seconds // 3600 }} ساعة
+                                        {% elif (time_delta.seconds // 60) > 0 %}
+                                            منذ {{ time_delta.seconds // 60 }} دقيقة
+                                        {% else %}
+                                            للتو
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- أزرار الإجراء -->
+                        <div style="display: flex; gap: 0.5rem; margin-right: 1rem;">
+                            {% if notification.related_url %}
+                            <a href="{{ notification.related_url }}" class="btn btn-sm btn-info" title="الانتقال للعملية">
+                                <i class="fas fa-arrow-left"></i>
+                            </a>
+                            {% endif %}
+                            <button class="btn btn-sm btn-danger" onclick="deleteNotification('{{ notification.id }}')" title="حذف">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- الترقيم -->
+                {% if notifications.pages > 1 %}
+                <nav aria-label="Pagination" class="mt-4">
+                    <ul class="pagination">
+                        {% if notifications.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('notifications.list_notifications', page=notifications.prev_num, filter=filter_type) }}">
+                                السابق
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% for page_num in notifications.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num == notifications.page %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                                {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('notifications.list_notifications', page=page_num, filter=filter_type) }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                                {% endif %}
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if notifications.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('notifications.list_notifications', page=notifications.next_num, filter=filter_type) }}">
+                                التالي
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-bell" style="font-size: 3rem; color: #ccc;"></i>
+                    <p class="text-muted mt-3">
+                        {% if filter_type == 'unread' %}
+                            لا توجد إشعارات غير مقروءة
+                        {% elif filter_type == 'read' %}
+                            لا توجد إشعارات مقروءة
+                        {% else %}
+                            لا توجد إشعارات
+                        {% endif %}
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .notification-item:hover {
+        background-color: #f8f9fa;
+        transition: background-color 0.2s ease;
+    }
+
+    .notification-item.unread {
+        background-color: #f0f7ff;
+        border-right: 4px solid #3498db;
+    }
+
+    .notification-list {
+        max-height: 800px;
+        overflow-y: auto;
+    }
+</style>
+
+<script>
+    function markAsRead(notificationId) {
+        fetch(`{{ url_for('notifications.mark_as_read', notification_id='') }}${notificationId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // تحديث الواجهة
+                const elem = document.getElementById(`notification-${notificationId}`);
+                if (elem) {
+                    elem.classList.remove('unread');
+                    // إعادة تحميل الصفحة بعد 500ms
+                    setTimeout(() => location.reload(), 500);
+                }
+            }
+        });
+    }
+
+    function deleteNotification(notificationId) {
+        if (confirm('هل أنت متأكد من حذف هذا الإشعار؟')) {
+            fetch(`{{ url_for('notifications.delete_notification', notification_id='') }}${notificationId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const elem = document.getElementById(`notification-${notificationId}`);
+                    if (elem) {
+                        elem.style.opacity = '0.5';
+                        setTimeout(() => {
+                            elem.remove();
+                            // إعادة تحميل إذا لم تبق إشعارات
+                            if (document.querySelectorAll('.notification-item').length === 0) {
+                                location.reload();
+                            }
+                        }, 300);
+                    }
+                }
+            });
+        }
+    }
+
+    document.getElementById('markAllReadBtn')?.addEventListener('click', function() {
+        if (confirm('هل تريد تحديد جميع الإشعارات كمقروءة؟')) {
+            fetch('{{ url_for("notifications.mark_all_as_read") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+        }
+    });
+
+    document.getElementById('clearAllBtn')?.addEventListener('click', function() {
+        if (confirm('هل أنت متأكد من حذف جميع الإشعارات؟')) {
+            fetch('{{ url_for("notifications.clear_all_notifications") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+        }
+    });
+
+    // تحديث عدد الإشعارات غير المقروءة كل 10 ثوان
+    setInterval(function() {
+        fetch('{{ url_for("notifications.get_unread_count") }}')
+            .then(response => response.json())
+            .then(data => {
+                const badge = document.getElementById('notificationBadge');
+                if (badge) {
+                    badge.textContent = data.unread_count;
+                }
+            });
+    }, 10000);
+</script>
+{% endblock %}

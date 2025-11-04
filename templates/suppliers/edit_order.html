@@ -1,0 +1,543 @@
+{% extends "base.html" %}
+
+{% block title %}تعديل أمر الشراء - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    /* رأس الصفحة */
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1a3a52;
+        letter-spacing: 0.5px;
+        margin-bottom: 0;
+    }
+
+    .page-title i {
+        margin-left: 12px;
+        color: #2e5f8a;
+    }
+
+    /* البطاقة الرئيسية */
+    .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #1a3a52 0%, #2e5f8a 100%);
+        color: white;
+        border: none;
+        padding: 18px 20px;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 0.3px;
+    }
+
+    .card-header i {
+        margin-left: 10px;
+    }
+
+    .card-body {
+        padding: 24px;
+    }
+
+    .card-title {
+        color: #1a3a52;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 0.3px;
+        margin-bottom: 16px;
+    }
+
+    .card-title i {
+        margin-left: 8px;
+        color: #2e5f8a;
+    }
+
+    /* حقول النموذج */
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .form-control, .form-select {
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        padding: 10px 12px;
+        transition: all 0.3s ease;
+        font-size: 14px;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #2e5f8a;
+        box-shadow: 0 0 0 3px rgba(46, 95, 138, 0.1);
+        outline: none;
+    }
+
+    .form-control-plaintext {
+        color: #555;
+        font-weight: 500;
+        padding: 10px 0;
+    }
+
+    .text-danger {
+        color: #e74c3c;
+        font-weight: 700;
+    }
+
+    /* الفاصل */
+    hr {
+        border: none;
+        height: 1px;
+        background: linear-gradient(to right, transparent, #d1d5db 50%, transparent);
+        margin: 24px 0;
+    }
+
+    /* الجدول */
+    .table-responsive {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .table {
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-bottom: 0;
+    }
+
+    .table thead {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ecf0f1 100%);
+    }
+
+    .table thead th {
+        border-bottom: 2px solid #2e5f8a;
+        color: #1a3a52;
+        font-weight: 700;
+        padding: 14px 12px;
+        font-size: 13px;
+        letter-spacing: 0.3px;
+        text-align: right;
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f0f4f8;
+        box-shadow: inset 2px 0 0 #2e5f8a;
+    }
+
+    .table td {
+        padding: 14px 12px;
+        vertical-align: middle;
+        color: #555;
+        font-size: 14px;
+    }
+
+    .table strong {
+        color: #1a3a52;
+        font-weight: 700;
+    }
+
+    .table-light {
+        background: linear-gradient(135deg, #f0f4f8 0%, #e8ecf0 100%);
+    }
+
+    .table-light td {
+        border-bottom: 2px solid #2e5f8a;
+        font-weight: 600;
+    }
+
+    .text-success {
+        color: #27ae60 !important;
+    }
+
+    .text-muted {
+        color: #9ca3af;
+    }
+
+    /* الشارات */
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+    }
+
+    .badge.bg-primary {
+        background: linear-gradient(135deg, #2e5f8a 0%, #1a3a52 100%) !important;
+    }
+
+    .badge.bg-info {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+    }
+
+    /* الأزرار */
+    .btn {
+        border-radius: 6px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        padding: 10px 20px;
+        font-size: 14px;
+        border: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #2e5f8a 0%, #1a3a52 100%);
+        color: white;
+        box-shadow: 0 2px 6px rgba(46, 95, 138, 0.3);
+    }
+
+    .btn-primary:hover {
+        box-shadow: 0 4px 12px rgba(46, 95, 138, 0.4);
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        color: white;
+        box-shadow: 0 2px 6px rgba(39, 174, 96, 0.3);
+    }
+
+    .btn-success:hover {
+        box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+        box-shadow: 0 2px 6px rgba(231, 76, 60, 0.3);
+    }
+
+    .btn-danger:hover {
+        box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+        color: white;
+    }
+
+    .btn-outline-secondary {
+        border: 1.5px solid #95a5a6;
+        color: #95a5a6;
+        background: white;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #95a5a6;
+        color: white;
+        border-color: #95a5a6;
+        transform: translateY(-2px);
+    }
+
+    .w-100 {
+        width: 100%;
+    }
+
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    /* رسائل التنبيه */
+    .alert {
+        border-radius: 8px;
+        border: none;
+        padding: 16px 20px;
+        font-size: 14px;
+    }
+
+    .alert-warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .alert-info {
+        background: #e3f2fd;
+        color: #1565c0;
+        border-left: 4px solid #1565c0;
+    }
+
+    .alert-info i {
+        margin-left: 8px;
+        font-weight: 700;
+    }
+
+    .alert ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .alert li {
+        margin-bottom: 8px;
+    }
+
+    /* مجموعة الأزرار */
+    .d-flex.gap-2 {
+        gap: 12px;
+        display: flex;
+    }
+
+    /* مجموعة الإدخال */
+    .input-group-text {
+        background: #f3f4f6;
+        border: 1px solid #d1d5db;
+        color: #1a3a52;
+        font-weight: 600;
+    }
+
+    .input-group .form-control {
+        border-right: none;
+    }
+
+    .text-end {
+        text-align: left;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="page-title">
+                    <i class="fas fa-edit"></i> تعديل أمر الشراء
+                </h1>
+                {% if order.items %}
+                <a href="{{ url_for('suppliers.invoice', order_id=order.id) }}" class="btn btn-success" target="_blank">
+                    <i class="fas fa-print"></i> عرض الفاتورة
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-file"></i> {{ order.po_number }}
+                </div>
+                <div class="card-body">
+                    <!-- الجزء الأول: معلومات الأمر الأساسية -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5 class="card-title mb-3">معلومات الأمر</h5>
+                            <div class="mb-3">
+                                <label class="form-label"><strong>المورد:</strong></label>
+                                <p class="form-control-plaintext">{{ order.supplier.name if order.supplier else '-' }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label"><strong>تاريخ الأمر:</strong></label>
+                                <p class="form-control-plaintext">{{ order.order_date.strftime('%Y-%m-%d %H:%M') if order.order_date else '-' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="card-title mb-3">تفاصيل إضافية</h5>
+                            <form method="POST" class="needs-validation">
+                                <div class="mb-3">
+                                    <label for="expected_delivery" class="form-label">تاريخ التسليم المتوقع</label>
+                                    <input type="date" class="form-control" id="expected_delivery" name="expected_delivery"
+                                           value="{{ order.expected_delivery.strftime('%Y-%m-%d') if order.expected_delivery else '' }}">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">حالة الأمر</label>
+                                    <select class="form-select" id="status" name="status">
+                                        <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>قيد الانتظار</option>
+                                        <option value="confirmed" {% if order.status == 'confirmed' %}selected{% endif %}>مؤكد</option>
+                                        <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>مستلم</option>
+                                        <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>ملغى</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="notes" class="form-label">ملاحظات</label>
+                                    <textarea class="form-control" id="notes" name="notes" rows="3">{{ order.notes or '' }}</textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> حفظ التغييرات
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- الجزء الثاني: إضافة عناصر -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-plus-circle"></i> إضافة سلعة للأمر
+                            </h5>
+                            <form method="POST" action="{{ url_for('suppliers.add_order_item', order_id=order.id) }}" class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="item_id" class="form-label">اختر السلعة <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="item_id" name="item_id" required>
+                                        <option value="">-- اختر سلعة --</option>
+                                        {% for item in items %}
+                                        <option value="{{ item.id }}" data-price="{{ item.unit_price or 0 }}">
+                                            {{ item.code }} - {{ item.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="quantity" class="form-label">الكمية <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="quantity" name="quantity" 
+                                           min="0.1" step="0.1" required placeholder="0">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="unit_price" class="form-label">السعر الوحدة <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="unit_price" name="unit_price" 
+                                               min="0" step="0.01" required placeholder="0.00">
+                                        <span class="input-group-text">د.ج</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-success w-100">
+                                        <i class="fas fa-plus"></i> إضافة إلى الأمر
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- الجزء الثالث: جدول السلع المضافة -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-list"></i> السلع المضافة في الأمر
+                                {% if order.items %}
+                                <span class="badge bg-primary">{{ order.items|length }}</span>
+                                {% endif %}
+                            </h5>
+                            
+                            {% if order.items %}
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 5%">#</th>
+                                            <th>الصنف</th>
+                                            <th style="width: 12%">الكمية</th>
+                                            <th style="width: 15%">السعر الوحدة</th>
+                                            <th style="width: 15%">الإجمالي</th>
+                                            <th style="width: 10%">الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in order.items %}
+                                        {% set item_total = item.quantity_ordered * item.unit_price %}
+                                        <tr>
+                                            <td>{{ loop.index }}</td>
+                                            <td>
+                                                <strong>{{ item.item.code if item.item else '-' }}</strong><br>
+                                                <small class="text-muted">{{ item.item.name if item.item else '-' }}</small>
+                                            </td>
+                                            <td>
+                                                {{ item.quantity_ordered }} {{ item.item.unit if item.item else '' }}
+                                            </td>
+                                            <td>
+                                                <strong>{{ "%.2f"|format(item.unit_price) }}</strong> د.ج
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">{{ "%.2f"|format(item_total) }} د.ج</span>
+                                            </td>
+                                            <td>
+                                                <form method="POST" action="{{ url_for('suppliers.remove_order_item', order_id=order.id, item_id=item.item_id) }}" 
+                                                      style="display: inline;" onsubmit="return confirm('هل أنت متأكد من حذف هذه السلعة؟');">
+                                                    <button type="submit" class="btn btn-sm btn-danger" title="حذف">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                        <tr class="table-light">
+                                            <td colspan="4" class="text-end">
+                                                <strong>المجموع الإجمالي:</strong>
+                                            </td>
+                                            <td>
+                                                <strong class="text-success" style="font-size: 1.1em;">
+                                                    {{ "%.2f"|format(order.total_amount) }} د.ج
+                                                </strong>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-warning text-center">
+                                <i class="fas fa-exclamation-triangle"></i> لم تتم إضافة أي سلع لهذا الأمر بعد
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-4">
+                        <strong><i class="fas fa-info-circle"></i> معلومات النظام:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>تاريخ الإنشاء: <strong>{{ order.created_at.strftime('%Y-%m-%d %H:%M') if order.created_at else '-' }}</strong></li>
+                            <li>آخر تحديث: <strong>{{ order.updated_at.strftime('%Y-%m-%d %H:%M') if order.updated_at else '-' }}</strong></li>
+                            <li>العدد الكلي: <strong>{{ order.total_amount|round(2) }} د.ج</strong></li>
+                        </ul>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        {% if order.items %}
+                        <a href="{{ url_for('suppliers.invoice', order_id=order.id) }}" class="btn btn-success" target="_blank">
+                            <i class="fas fa-print"></i> عرض وطباعة الفاتورة
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('suppliers.orders') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> العودة
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-fill unit price when item is selected
+    document.getElementById('item_id').addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const price = selectedOption.getAttribute('data-price');
+        document.getElementById('unit_price').value = price || '';
+    });
+
+    // Enable Bootstrap form validation
+    (function() {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>
+{% endblock %}

@@ -1,0 +1,461 @@
+{% extends "base.html" %}
+
+{% block title %}تعديل موردين - CfpaZMS{% endblock %}
+
+{% block styles %}
+<style>
+    /* ============================================
+       MODERN GRADIENT DESIGN SYSTEM - FORM PAGES
+       ============================================ */
+    
+    /* Page Header Styling */
+    .h3 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: none;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    .h3 i {
+        margin-left: 12px;
+        color: inherit;
+    }
+
+    /* Badge Styling */
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+    }
+
+    .badge.bg-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white;
+    }
+
+    /* Card Styling */
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        background: #ffffff;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+
+    .card:hover {
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px 12px 0 0;
+        font-weight: 700;
+        font-size: 1rem;
+        letter-spacing: 0.3px;
+        padding: 1.25rem;
+    }
+
+    .card-header i {
+        margin-left: 10px;
+        color: inherit;
+    }
+
+    .card-header.bg-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+
+    .card-header.bg-info {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+    }
+
+    .card-header.bg-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    }
+
+    .card-header.bg-light {
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%) !important;
+        color: #667eea;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .card-header h5 {
+        margin: 0;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: white;
+    }
+
+    /* Card Info */
+    .card-body h6 {
+        color: #667eea;
+        font-weight: 700;
+        font-size: 0.95rem;
+        letter-spacing: 0.3px;
+        margin-bottom: 0.5rem;
+    }
+
+    .card-body p {
+        margin: 0;
+        color: #555;
+        font-size: 1rem;
+    }
+
+    .text-muted {
+        color: #9ca3af !important;
+        font-weight: 500;
+    }
+
+    /* Form Controls */
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.8rem;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        background-color: #f9fafb;
+    }
+
+    .form-control::placeholder {
+        color: #d1d5db;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+
+    .form-control:disabled {
+        background: #f3f4f6;
+        color: #9ca3af;
+        border-color: #d1d5db;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        font-family: inherit;
+    }
+
+    /* Validation Feedback */
+    .invalid-feedback {
+        color: #ef4444;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-top: 0.5rem;
+        display: block;
+    }
+
+    .text-danger {
+        color: #ef4444;
+        font-weight: 700;
+    }
+
+    .was-validated .form-control:invalid {
+        border-color: #ef4444;
+    }
+
+    .was-validated .form-control:valid {
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    /* Buttons */
+    .btn {
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        border: none;
+        letter-spacing: 0.3px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .btn-primary:hover {
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        transform: translateY(-2px);
+        color: white;
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+        box-shadow: 0 4px 12px rgba(107, 114, 128, 0.2);
+    }
+
+    .btn-secondary:hover {
+        box-shadow: 0 8px 20px rgba(107, 114, 128, 0.3);
+        transform: translateY(-2px);
+        color: white;
+        background: #4b5563;
+    }
+
+    .w-100 {
+        width: 100%;
+    }
+
+    .btn i {
+        margin-left: 8px;
+    }
+
+    /* Info Panel */
+    .sticky-top {
+        background: white;
+    }
+
+    .list-unstyled {
+        margin: 0;
+        padding: 0;
+    }
+
+    .list-unstyled li {
+        padding: 0.5rem 0;
+        color: #555;
+        font-size: 0.875rem;
+    }
+
+    /* Separator */
+    hr {
+        border: none;
+        border-top: 2px solid #e5e7eb;
+        margin: 1rem 0;
+    }
+
+    /* Text Color Classes */
+    .text-primary {
+        color: #667eea !important;
+    }
+
+    .text-info {
+        color: #06b6d4 !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.25rem;
+            font-size: 0.95rem;
+        }
+
+        .h3 {
+            font-size: 2rem;
+        }
+
+        .card-header {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-edit text-primary"></i> تعديل بيانات المورد
+                </h1>
+                <span class="badge bg-primary">تعديل</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Form -->
+        <div class="col-lg-8">
+            <form method="POST" action="{{ url_for('suppliers.edit_supplier', supplier_id=supplier.id) }}" class="needs-validation" novalidate>
+                <!-- Basic Information Section -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-info-circle"></i> المعلومات الأساسية</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">اسم المورد <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{ supplier.name }}" required>
+                                <div class="invalid-feedback">يجب إدخال اسم المورد</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="code" class="form-label">كود المورد (للقراءة فقط)</label>
+                                <input type="text" class="form-control" id="code" name="code" value="{{ supplier.code }}" disabled>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="description" class="form-label">الوصف</label>
+                                <textarea class="form-control" id="description" name="description" rows="2">{{ supplier.description or '' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information Section -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-phone"></i> معلومات الاتصال</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">رقم الهاتف <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control" id="phone" name="phone" value="{{ supplier.phone }}" required>
+                                <div class="invalid-feedback">يجب إدخال رقم هاتف صحيح</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">البريد الإلكتروني</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ supplier.email|default('') }}">
+                                <div class="invalid-feedback">يجب إدخال بريد إلكتروني صحيح</div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="address" class="form-label">العنوان <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="address" name="address" value="{{ supplier.address or '' }}" required>
+                                <div class="invalid-feedback">يجب إدخال عنوان المورد</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="city" class="form-label">المدينة</label>
+                                <input type="text" class="form-control" id="city" name="city" value="{{ supplier.city or '' }}">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="contact_person" class="form-label">شخص الاتصال</label>
+                                <input type="text" class="form-control" id="contact_person" name="contact_person" value="{{ supplier.contact_person|default('') }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legal Information Section -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-file-contract"></i> المعلومات القانونية</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="tax_id" class="form-label">رقم الضريبة <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="tax_id" name="tax_id" value="{{ supplier.tax_id or '' }}" required>
+                                <div class="invalid-feedback">يجب إدخال رقم الضريبة</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="registration_number" class="form-label">رقم السجل التجاري</label>
+                                <input type="text" class="form-control" id="registration_number" name="registration_number" value="{{ supplier.registration_number|default('') }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-save"></i> حفظ التعديلات
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <a href="{{ url_for('suppliers.suppliers') }}" class="btn btn-secondary w-100">
+                            <i class="fas fa-arrow-left"></i> العودة إلى قائمة الموردين
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Info Panel -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-info-circle text-info"></i> معلومات المورد</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="mb-3"><strong>رقم المورد:</strong></h6>
+                    <p class="text-muted">{{ supplier.id }}</p>
+
+                    <hr>
+
+                    <h6 class="mb-3"><strong>تاريخ الإنشاء:</strong></h6>
+                    <p class="text-muted">{{ supplier.created_at|default('غير محدد') }}</p>
+
+                    <hr>
+
+                    <h6 class="mb-3"><strong>تاريخ آخر تعديل:</strong></h6>
+                    <p class="text-muted">{{ supplier.updated_at|default('غير محدد') }}</p>
+
+                    <hr>
+
+                    <h6 class="mb-3"><strong>نصائح:</strong></h6>
+                    <ul class="list-unstyled small">
+                        <li>✓ تحقق من جميع البيانات قبل الحفظ</li>
+                        <li>✓ لا تترك الحقول المطلوبة فارغة</li>
+                        <li>✓ احفظ التعديلات بشكل دوري</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Form validation
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            let forms = document.querySelectorAll('.needs-validation');
+            Array.prototype.slice.call(forms).forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>
+{% endblock %}

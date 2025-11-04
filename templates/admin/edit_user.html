@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}تعديل المستخدم - نظام الإدارة{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="page-title">
+                <i class="fas fa-edit"></i> تعديل بيانات المستخدم
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-user"></i> {{ user.full_name }}
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation">
+                        <!-- البيانات الشخصية -->
+                        <h5 class="mb-3"><i class="fas fa-user"></i> البيانات الشخصية</h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="first_name" class="form-label">الاسم الأول <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" 
+                                       value="{{ user.first_name }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="last_name" class="form-label">اسم العائلة <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" 
+                                       value="{{ user.last_name }}" required>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">البريد الإلكتروني <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       value="{{ user.email }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">رقم الهاتف</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" 
+                                       value="{{ user.phone or '' }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="address" class="form-label">العنوان</label>
+                            <textarea class="form-control" id="address" name="address" rows="2">{{ user.address or '' }}</textarea>
+                        </div>
+
+                        <!-- معلومات الدور والقسم -->
+                        <h5 class="mb-3"><i class="fas fa-briefcase"></i> معلومات الوظيفة</h5>
+                        
+                        <div class="mb-3">
+                            <label for="role" class="form-label">الدور <span class="text-danger">*</span></label>
+                            <select class="form-select" id="role" name="role" required>
+                                {% for role_value, role_label in roles %}
+                                <option value="{{ role_value }}" {% if user.role == role_value %}selected{% endif %}>{{ role_label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="department" class="form-label">القسم</label>
+                                <input type="text" class="form-control" id="department" name="department" 
+                                       value="{{ user.department or '' }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="position" class="form-label">المنصب</label>
+                                <input type="text" class="form-control" id="position" name="position" 
+                                       value="{{ user.position or '' }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="rank" class="form-label">الرتبة</label>
+                                <input type="text" class="form-control" id="rank" name="rank" 
+                                       value="{{ user.rank or '' }}">
+                            </div>
+                        </div>
+
+                        <!-- حالة الحساب -->
+                        <h5 class="mb-3"><i class="fas fa-lock"></i> حالة الحساب</h5>
+                        
+                        <div class="mb-3 form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                                   {% if user.is_active %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">
+                                الحساب نشط (السماح بالدخول)
+                            </label>
+                        </div>
+
+                        <!-- الصلاحيات -->
+                        <h5 class="mb-3"><i class="fas fa-lock"></i> الصلاحيات</h5>
+                        
+                        <div class="row">
+                            {% for category, data in permissions.items() %}
+                            <div class="col-md-6 mb-4">
+                                <div class="card border-light">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-key"></i> {{ data.name }}
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        {% for perm_key, perm_name in data.permissions.items() %}
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   id="perm_{{ perm_key }}" name="perm_{{ perm_key }}"
+                                                   {% if perm_key in user_allowed_perms %}checked{% endif %}>
+                                            <label class="form-check-label" for="perm_{{ perm_key }}">
+                                                {{ perm_name }}
+                                            </label>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="alert alert-info mt-3">
+                            <strong><i class="fas fa-info-circle"></i> معلومات الحساب:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>اسم المستخدم: <strong>{{ user.username }}</strong></li>
+                                <li>تاريخ الإنشاء: <strong>{{ user.created_at.strftime('%Y-%m-%d %H:%M') }}</strong></li>
+                                <li>آخر تحديث: <strong>{{ user.updated_at.strftime('%Y-%m-%d %H:%M') }}</strong></li>
+                                {% if user.last_login %}
+                                <li>آخر دخول: <strong>{{ user.last_login.strftime('%Y-%m-%d %H:%M') }}</strong></li>
+                                {% else %}
+                                <li>آخر دخول: <strong>لم يدخل بعد</strong></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+
+                        <!-- الأزرار -->
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> حفظ التغييرات
+                            </button>
+                            <a href="{{ url_for('admin.users') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

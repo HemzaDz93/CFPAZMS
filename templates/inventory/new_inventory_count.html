@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}بدء عملية جرد جديدة - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    .page-header-wrapper {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+    }
+
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        border: none;
+        padding: 1rem 1.25rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 10px 12px;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 0.6rem 1.5rem;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        color: white;
+    }
+
+    .btn-secondary {
+        border: 2px solid #e5e7eb;
+        background: white;
+        color: #667eea;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 0.6rem 1.5rem;
+    }
+
+    .btn-secondary:hover {
+        background: #f9fafb;
+        border-color: #667eea;
+    }
+
+    .info-box {
+        background: #f0f9ff;
+        border-right: 4px solid #3b82f6;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-box-title {
+        color: #1e40af;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-box-text {
+        color: #1e3a8a;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="page-header-wrapper">
+        <div>
+            <h1 class="page-title mb-0">
+                <i class="fas fa-plus"></i> بدء عملية جرد جديدة
+            </h1>
+            <p class="text-white-50 mt-2 mb-0">أنشئ عملية جرد جديدة للتحقق من المخزون</p>
+        </div>
+    </div>
+
+    <!-- Info Box -->
+    <div class="info-box">
+        <div class="info-box-title">
+            <i class="fas fa-info-circle"></i> معلومات
+        </div>
+        <div class="info-box-text">
+            بدء عملية جرد جديدة سيقوم بإنشاء سجل شامل لجميع الأصناف النشطة مع كمياتها الحالية من النظام.
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-clipboard"></i> معلومات العملية
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">نوع الجرد <span style="color: #ef4444;">*</span></label>
+                        <select class="form-select" name="count_type" required>
+                            <option value="">اختر نوع الجرد</option>
+                            <option value="full">جرد كامل</option>
+                            <option value="partial">جرد جزئي</option>
+                            <option value="cycle">جرد دورة</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">المستودع/الموقع</label>
+                        <input type="text" class="form-control" name="warehouse_location" 
+                               placeholder="أدخل اسم المستودع أو الموقع">
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="d-flex gap-2 justify-content-start">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check"></i> بدء العملية
+                            </button>
+                            <a href="{{ url_for('inventory.inventory_counts') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Guidelines -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <i class="fas fa-lightbulb"></i> إرشادات
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <h6 class="mb-2" style="color: #667eea;">
+                            <i class="fas fa-tasks"></i> جرد كامل
+                        </h6>
+                        <p class="text-muted mb-0" style="font-size: 14px;">
+                            عملية فحص شاملة لجميع الأصناف في المستودع. تستخدم عادة في نهاية السنة المالية أو عند تغيير المسؤول.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <h6 class="mb-2" style="color: #667eea;">
+                            <i class="fas fa-tasks"></i> جرد جزئي
+                        </h6>
+                        <p class="text-muted mb-0" style="font-size: 14px;">
+                            فحص محدود لأصناف معينة أو قسم معين من المستودع. تستخدم للتحقق السريع من الأصناف الحرجة.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <h6 class="mb-2" style="color: #667eea;">
+                            <i class="fas fa-tasks"></i> جرد دورة
+                        </h6>
+                        <p class="text-muted mb-0" style="font-size: 14px;">
+                            عملية منتظمة تتم بشكل دوري على دفعات صغيرة من الأصناف. تستخدم للمراقبة المستمرة دون إيقاف العمليات.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}مخزون المستودع - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    .page-header-wrapper {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+    }
+
+    .warehouse-info-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+        border-left: 4px solid #667eea;
+    }
+
+    .warehouse-info-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .warehouse-info-item strong {
+        display: block;
+        color: #555;
+        margin-bottom: 0.3rem;
+        font-weight: 700;
+    }
+
+    .warehouse-info-item {
+        color: #9ca3af;
+        font-size: 14px;
+    }
+
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        border: none;
+        padding: 1rem 1.25rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+
+    .table thead th {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        font-weight: 700;
+        text-align: right;
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f9fafb;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-info {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .badge-success {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .badge-warning {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .btn-outline-primary {
+        color: #667eea;
+        border: 2px solid #667eea;
+        font-weight: 600;
+        border-radius: 8px;
+        background: white;
+        padding: 0.4rem 0.8rem;
+        font-size: 13px;
+    }
+
+    .btn-outline-primary:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        font-weight: 600;
+        border-radius: 10px;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        background: #f9fafb;
+        border-radius: 12px;
+    }
+
+    .empty-state-icon {
+        font-size: 48px;
+        color: #d1d5db;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state-text {
+        color: #9ca3af;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="page-header-wrapper">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="page-title mb-0">
+                    <i class="fas fa-warehouse"></i> {{ warehouse.name }}
+                </h1>
+                <p class="text-white-50 mt-2 mb-0">مخزون المستودع وتفاصيل الأصناف</p>
+            </div>
+            <a href="{{ url_for('inventory.warehouses') }}" class="btn btn-light">
+                <i class="fas fa-arrow-left"></i> عودة
+            </a>
+        </div>
+    </div>
+
+    <!-- Warehouse Information -->
+    <div class="warehouse-info-card">
+        <div class="warehouse-info-row">
+            <div class="warehouse-info-item">
+                <strong>كود المستودع</strong>
+                {{ warehouse.code }}
+            </div>
+            <div class="warehouse-info-item">
+                <strong>الموقع</strong>
+                {{ warehouse.location }}
+            </div>
+            <div class="warehouse-info-item">
+                <strong>العنوان</strong>
+                {{ warehouse.address or '-' }}
+            </div>
+            {% if warehouse.capacity %}
+            <div class="warehouse-info-item">
+                <strong>السعة</strong>
+                {{ warehouse.capacity }} وحدة
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Inventory Items -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-boxes"></i> الأصناف في المستودع ({{ inventory_items | length }})
+        </div>
+        {% if inventory_items %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>الصنف</th>
+                        <th>الكود</th>
+                        <th>الكمية</th>
+                        <th>الحد الأدنى</th>
+                        <th>السعر / الوحدة</th>
+                        <th>الحالة</th>
+                        <th>آخر تحديث</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in inventory_items %}
+                    <tr>
+                        <td><strong>{{ item.item.name }}</strong></td>
+                        <td><span class="badge badge-info">{{ item.item.code }}</span></td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.item.minimum_quantity }}</td>
+                        <td>{{ item.item.unit_price or '-' }} دج</td>
+                        <td>
+                            {% if item.quantity <= item.item.minimum_quantity %}
+                                <span class="badge badge-warning"><i class="fas fa-exclamation"></i> منخفض</span>
+                            {% else %}
+                                <span class="badge badge-success"><i class="fas fa-check"></i> كافي</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.updated_at.strftime('%d/%m/%Y') if item.updated_at else '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-inbox"></i>
+            </div>
+            <p class="empty-state-text">لا توجد أصناف في هذا المستودع</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-4">
+        <a href="{{ url_for('inventory.warehouses') }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> العودة إلى المستودعات
+        </a>
+    </div>
+</div>
+{% endblock %}

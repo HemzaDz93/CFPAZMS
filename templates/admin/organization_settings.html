@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}إعدادات المؤسسة - نظام الإدارة{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="page-title">
+                <i class="fas fa-hospital"></i> إعدادات المؤسسة
+            </h1>
+        </div>
+    </div>
+
+    {% if org_settings %}
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-edit"></i> تعديل معلومات المؤسسة
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation">
+                        <!-- الوزارة -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="ministry_name" class="form-label">اسم الوزارة (عربي) <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="ministry_name" name="ministry_name" 
+                                       value="{{ org_settings.ministry_name or '' }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="ministry_name_en" class="form-label">Ministry Name (English)</label>
+                                <input type="text" class="form-control" id="ministry_name_en" name="ministry_name_en" 
+                                       value="{{ org_settings.ministry_name_en or '' }}">
+                            </div>
+                        </div>
+
+                        <!-- المديرية -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="directorate_name" class="form-label">اسم المديرية (عربي) <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="directorate_name" name="directorate_name" 
+                                       value="{{ org_settings.directorate_name or '' }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="directorate_name_en" class="form-label">Directorate Name (English)</label>
+                                <input type="text" class="form-control" id="directorate_name_en" name="directorate_name_en" 
+                                       value="{{ org_settings.directorate_name_en or '' }}">
+                            </div>
+                        </div>
+
+                        <!-- المؤسسة -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="institution_name" class="form-label">اسم المؤسسة (عربي) <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="institution_name" name="institution_name" 
+                                       value="{{ org_settings.institution_name or '' }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="institution_name_en" class="form-label">Institution Name (English)</label>
+                                <input type="text" class="form-control" id="institution_name_en" name="institution_name_en" 
+                                       value="{{ org_settings.institution_name_en or '' }}">
+                            </div>
+                        </div>
+
+                        <!-- البيانات الإضافية -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="institution_code" class="form-label">رمز المؤسسة</label>
+                                <input type="text" class="form-control" id="institution_code" name="institution_code" 
+                                       value="{{ org_settings.institution_code or '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="tax_id" class="form-label">الرقم الجبائي</label>
+                                <input type="text" class="form-control" id="tax_id" name="tax_id" 
+                                       value="{{ org_settings.tax_id or '' }}">
+                            </div>
+                        </div>
+
+                        <!-- التفاصيل -->
+                        <div class="mb-3">
+                            <label for="address" class="form-label">العنوان</label>
+                            <textarea class="form-control" id="address" name="address" rows="2">{{ org_settings.address or '' }}</textarea>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">رقم الهاتف</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" 
+                                       value="{{ org_settings.phone or '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">البريد الإلكتروني</label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       value="{{ org_settings.email or '' }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="website" class="form-label">الموقع الإلكتروني</label>
+                            <input type="url" class="form-control" id="website" name="website" 
+                                   value="{{ org_settings.website or '' }}">
+                        </div>
+
+                        <!-- إعدادات المطعم -->
+                        <hr class="my-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-utensils"></i> إعدادات خدمات المطعم والوجبات
+                        </h5>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="meal_cost_per_unit" class="form-label">
+                                    سعر الوجبة الواحدة (دج) <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="meal_cost_per_unit" 
+                                           name="meal_cost_per_unit" step="0.01" min="0"
+                                           value="{{ org_settings.meal_cost_per_unit or 2.5 }}" required>
+                                    <span class="input-group-text">دينار</span>
+                                </div>
+                                <small class="form-text text-muted">السعر المستخدم لحساب تكلفة وجبات الموظفين</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="meal_alert_threshold" class="form-label">
+                                    عتبة التنبيه الشهرية (دج) <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="meal_alert_threshold" 
+                                           name="meal_alert_threshold" step="0.01" min="0"
+                                           value="{{ org_settings.meal_alert_threshold or 500 }}" required>
+                                    <span class="input-group-text">دينار</span>
+                                </div>
+                                <small class="form-text text-muted">إرسال تنبيه عند تجاوز هذا المبلغ</small>
+                            </div>
+                        </div>
+
+                        <!-- الأزرار -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> حفظ التغييرات
+                            </button>
+                            <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>آخر تحديث: {{ org_settings.updated_at.strftime('%Y-%m-%d %H:%M') if org_settings.updated_at else 'لم يتم التحديث' }}</small>
+                    {% if org_settings.updated_by %}
+                    <small class="ms-2">بواسطة: {{ org_settings.updated_by }}</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- معلومات إضافية -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-info-circle"></i> معلومات النظام
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>الوزارة الحالية:</strong>
+                        <p class="text-muted">{{ org_settings.ministry_name }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>المديرية الحالية:</strong>
+                        <p class="text-muted">{{ org_settings.directorate_name }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>المؤسسة الحالية:</strong>
+                        <p class="text-muted">{{ org_settings.institution_name }}</p>
+                    </div>
+                    <hr>
+                    <div class="alert alert-info">
+                        <i class="fas fa-lightbulb"></i> 
+                        <strong>ملاحظة:</strong>
+                        جميع التغييرات التي تجريها هنا ستظهر تلقائياً في جميع الوثائق والتقارير.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview Card -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <i class="fas fa-eye"></i> معاينة رأس الوثيقة
+                </div>
+                <div class="card-body" style="background: #f8f9fa; border-radius: 8px; padding: 2rem; text-align: center;">
+                    <h5>{{ org_settings.ministry_name }}</h5>
+                    <h6>{{ org_settings.directorate_name }}</h6>
+                    <h5 class="mt-2">{{ org_settings.institution_name }}</h5>
+                    {% if org_settings.institution_code %}
+                    <small class="text-muted">الرمز: {{ org_settings.institution_code }}</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        لم يتم العثور على إعدادات المؤسسة. يرجى إعادة تحميل الصفحة.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

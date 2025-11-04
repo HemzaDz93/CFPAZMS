@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة QR/Barcode - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    .page-header-wrapper {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+    }
+
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        border: none;
+        padding: 1rem 1.25rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+
+    .barcode-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border-left: 4px solid #667eea;
+        margin-bottom: 1.5rem;
+    }
+
+    .barcode-display {
+        background: #f9fafb;
+        padding: 1rem;
+        border-radius: 8px;
+        text-align: center;
+        margin: 1rem 0;
+        font-family: monospace;
+        word-break: break-all;
+        font-size: 12px;
+        color: #555;
+        user-select: all;
+    }
+
+    .barcode-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .info-item strong {
+        display: block;
+        color: #555;
+        margin-bottom: 0.3rem;
+        font-weight: 700;
+    }
+
+    .info-item {
+        color: #9ca3af;
+        font-size: 14px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .stat-number {
+        font-size: 28px;
+        font-weight: 700;
+        color: #667eea;
+    }
+
+    .stat-label {
+        color: #9ca3af;
+        font-size: 14px;
+        margin-top: 0.5rem;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 0.5rem;
+    }
+
+    .badge-info {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 0.6rem 1rem;
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="page-header-wrapper">
+        <div>
+            <h1 class="page-title mb-0">
+                <i class="fas fa-barcode"></i> إدارة QR/Barcode
+            </h1>
+            <p class="text-white-50 mt-2 mb-0">إدارة رموز QR والرموز الشريطية للأصناف</p>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ configs | length }}</div>
+            <div class="stat-label">إجمالي الرموز</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ configs | map(attribute='scan_count') | sum }}</div>
+            <div class="stat-label">إجمالي المسحات</div>
+        </div>
+    </div>
+
+    <!-- Barcode Configurations -->
+    {% if configs %}
+        {% for config in configs %}
+        <div class="barcode-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h5 style="color: #555; margin-bottom: 0.5rem;">{{ config.item.name }}</h5>
+                    <span class="badge badge-info">{{ config.item.code }}</span>
+                </div>
+                <div style="text-align: right;">
+                    <small class="text-muted">نوع: {{ config.barcode_type.upper() }}</small>
+                </div>
+            </div>
+
+            <div class="barcode-display">
+                {{ config.barcode_value }}
+            </div>
+
+            <div class="info-item" style="margin-bottom: 1rem;">
+                <strong>يمكنك نسخ الكود أعلاه لإنشاء ملصق</strong>
+                <button class="btn btn-primary" onclick="copyToClipboard('{{ config.barcode_value }}')">
+                    <i class="fas fa-copy"></i> نسخ
+                </button>
+            </div>
+
+            <div class="barcode-info">
+                <div class="info-item">
+                    <strong>عدد المسحات</strong>
+                    {{ config.scan_count }}
+                </div>
+                <div class="info-item">
+                    <strong>آخر مسح</strong>
+                    {{ config.last_scanned.strftime('%d/%m/%Y %H:%M') if config.last_scanned else '-' }}
+                </div>
+                <div class="info-item">
+                    <strong>الموقع الحالي</strong>
+                    {{ config.current_location or '-' }}
+                </div>
+                <div class="info-item">
+                    <strong>تاريخ الإنشاء</strong>
+                    {{ config.created_at.strftime('%d/%m/%Y') if config.created_at else '-' }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div style="text-align: center; padding: 3rem 1rem; background: #f9fafb; border-radius: 12px;">
+        <div style="font-size: 48px; color: #d1d5db; margin-bottom: 1rem;">
+            <i class="fas fa-inbox"></i>
+        </div>
+        <p style="color: #9ca3af; margin-bottom: 0;">لا توجد رموز QR/Barcode محسجلة</p>
+    </div>
+    {% endif %}
+
+    <!-- Information -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <i class="fas fa-info-circle"></i> معلومات عن QR/Barcode
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <h6 style="color: #667eea;">
+                        <i class="fas fa-qrcode"></i> رموز QR
+                    </h6>
+                    <p class="text-muted" style="font-size: 14px;">
+                        رموز ثنائية الأبعاد يمكن مسحها بكاميرات الهواتف الذكية. توفر سعة تخزينية أكبر وسرعة مسح أعلى.
+                    </p>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <h6 style="color: #667eea;">
+                        <i class="fas fa-barcode"></i> الرموز الشريطية
+                    </h6>
+                    <p class="text-muted" style="font-size: 14px;">
+                        رموز أحادية البعد التقليدية. تتطلب ماسح ضوئي متخصص لكن أرخص في الطباعة.
+                    </p>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <h6 style="color: #667eea;">
+                        <i class="fas fa-mobile-alt"></i> الاستخدام
+                    </h6>
+                    <p class="text-muted" style="font-size: 14px;">
+                        استخدم الرموز لتتبع الأصناف بسهولة وسرعة. ساعد في إدارة المخزون والمسح السريع.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('تم نسخ الكود بنجاح');
+    });
+}
+</script>
+{% endblock %}

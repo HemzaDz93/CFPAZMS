@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}إضافة دعم للموظف{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-gift"></i> إضافة دعم جديد للموظف</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <!-- اختيار الموظف -->
+                        <div class="mb-3">
+                            <label for="user_id" class="form-label">الموظف *</label>
+                            <select id="user_id" name="user_id" class="form-select" required>
+                                <option value="">-- اختر الموظف --</option>
+                                {% for user in users %}
+                                <option value="{{ user.id }}">
+                                    {{ user.full_name }} ({{ user.department or 'بدون قسم' }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- نوع الدعم -->
+                        <div class="mb-3">
+                            <label for="subsidy_type" class="form-label">نوع الدعم *</label>
+                            <select id="subsidy_type" name="subsidy_type" class="form-select" required 
+                                    onchange="updateSubsidyLabel()">
+                                <option value="">-- اختر نوع الدعم --</option>
+                                <option value="percentage_discount">خصم نسبي (%)</option>
+                                <option value="fixed_amount">مبلغ ثابت (د.ج)</option>
+                                <option value="free_meals">وجبات مجانية</option>
+                                <option value="special_diet">نظام غذائي خاص</option>
+                            </select>
+                        </div>
+
+                        <!-- قيمة الدعم -->
+                        <div class="mb-3">
+                            <label for="subsidy_value" class="form-label" id="subsidy_label">قيمة الدعم *</label>
+                            <div class="input-group">
+                                <input type="number" id="subsidy_value" name="subsidy_value" class="form-control" 
+                                       step="0.01" required min="0">
+                                <span class="input-group-text" id="subsidy_unit">د.ج</span>
+                            </div>
+                        </div>
+
+                        <!-- السبب -->
+                        <div class="mb-3">
+                            <label for="reason" class="form-label">سبب الدعم *</label>
+                            <input type="text" id="reason" name="reason" class="form-control" required 
+                                   placeholder="مثل: موظف جديد، موظف مسؤول...">
+                        </div>
+
+                        <!-- فترة الدعم -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="start_date" class="form-label">تاريخ البدء *</label>
+                                <input type="date" id="start_date" name="start_date" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="end_date" class="form-label">تاريخ الانتهاء (اختياري)</label>
+                                <input type="date" id="end_date" name="end_date" class="form-control">
+                                <small class="text-muted">اتركه فارغاً للدعم غير محدود الوقت</small>
+                            </div>
+                        </div>
+
+                        <!-- ملاحظات -->
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">ملاحظات إضافية</label>
+                            <textarea id="notes" name="notes" class="form-control" rows="3" 
+                                      placeholder="أي معلومات إضافية..."></textarea>
+                        </div>
+
+                        <!-- معلومات تنبيهية -->
+                        <div class="alert alert-info" role="alert">
+                            <h6 class="alert-heading"><i class="fas fa-info-circle"></i> تنبيه</h6>
+                            <ul class="mb-0">
+                                <li>سيتم تطبيق الدعم تلقائياً على جميع وجبات الموظف</li>
+                                <li>الدعم ساري من تاريخ البدء حتى تاريخ الانتهاء</li>
+                                <li>يمكن إلغاء الدعم في أي وقت</li>
+                            </ul>
+                        </div>
+
+                        <!-- أزرار -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('restaurant_advanced.subsidy_list') }}" class="btn btn-secondary">إلغاء</a>
+                            <button type="submit" class="btn btn-primary">إضافة الدعم</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateSubsidyLabel() {
+    const subsidyType = document.getElementById('subsidy_type').value;
+    const subsidyLabel = document.getElementById('subsidy_label');
+    const subsidyUnit = document.getElementById('subsidy_unit');
+    const subsidyValue = document.getElementById('subsidy_value');
+    
+    switch(subsidyType) {
+        case 'percentage_discount':
+            subsidyLabel.textContent = 'نسبة الخصم (%)';
+            subsidyUnit.textContent = '%';
+            subsidyValue.max = '100';
+            break;
+        case 'fixed_amount':
+            subsidyLabel.textContent = 'المبلغ (د.ج)';
+            subsidyUnit.textContent = 'د.ج';
+            subsidyValue.max = '';
+            break;
+        case 'free_meals':
+            subsidyLabel.textContent = 'عدد الوجبات المجانية';
+            subsidyUnit.textContent = 'وجبة';
+            subsidyValue.max = '';
+            break;
+        case 'special_diet':
+            subsidyLabel.textContent = 'قيمة الدعم (د.ج)';
+            subsidyUnit.textContent = 'د.ج';
+            subsidyValue.max = '';
+            break;
+    }
+}
+
+// تعيين تاريخ اليوم كـ تاريخ بدء افتراضي
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('start_date').value = today;
+});
+</script>
+
+{% endblock %}

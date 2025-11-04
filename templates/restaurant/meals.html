@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+
+{% block title %}تسجيل الوجبات اليومية - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    .page-header-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .page-header-section .page-title {
+        color: white;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        font-size: 2rem;
+    }
+
+    .page-header-section .page-title i {
+        margin-left: 1rem;
+        font-size: 2.2rem;
+    }
+
+    .summary-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .summary-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .summary-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .summary-card .card-title {
+        color: #667eea;
+        font-weight: 700;
+        font-size: 0.95rem;
+        letter-spacing: 0.3px;
+    }
+
+    .summary-card h3 {
+        font-weight: 700;
+        font-size: 1.8rem;
+        margin: 1rem 0 0.5rem;
+    }
+
+    .summary-card.breakfast h3 {
+        color: #f59e0b;
+    }
+
+    .summary-card.lunch h3 {
+        color: #06b6d4;
+    }
+
+    .summary-card.dinner h3 {
+        color: #764ba2;
+    }
+
+    .summary-card.total h3 {
+        color: #10b981;
+    }
+
+    .summary-card small {
+        color: #9ca3af;
+        font-weight: 500;
+    }
+
+    .search-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+    }
+
+    .search-card .form-control,
+    .search-card .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .search-card .form-control:focus,
+    .search-card .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="page-header-section d-flex justify-content-between align-items-center">
+        <h1 class="page-title mb-0">
+            <i class="fas fa-utensils"></i> الوجبات اليومية
+        </h1>
+        <a href="{{ url_for('restaurant.add_meal') }}" class="btn btn-light" style="color: #667eea; font-weight: 600;">
+            <i class="fas fa-plus"></i> تسجيل وجبة جديدة
+        </a>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card search-card mb-3">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-2">
+                    <input type="date" name="date" class="form-control" 
+                           value="{{ request.args.get('date', today) }}">
+                </div>
+                <div class="col-md-2">
+                    <select name="meal_type" class="form-select">
+                        <option value="">-- نوع الوجبة --</option>
+                        <option value="breakfast" {% if request.args.get('meal_type') == 'breakfast' %}selected{% endif %}>إفطار</option>
+                        <option value="lunch" {% if request.args.get('meal_type') == 'lunch' %}selected{% endif %}>غداء</option>
+                        <option value="dinner" {% if request.args.get('meal_type') == 'dinner' %}selected{% endif %}>عشاء</option>
+                        <option value="snack" {% if request.args.get('meal_type') == 'snack' %}selected{% endif %}>وجبة خفيفة</option>
+                    </select>
+                </div>
+                <div class="col-md-3 text-end">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-search"></i> بحث
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Daily Summary -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card summary-card breakfast text-center">
+                <div class="card-body">
+                    <h6 class="card-title"><i class="fas fa-sun"></i> إفطار</h6>
+                    <h3>{{ breakfast_count or 0 }}</h3>
+                    <small>وجبات</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card summary-card lunch text-center">
+                <div class="card-body">
+                    <h6 class="card-title"><i class="fas fa-cloud-sun"></i> غداء</h6>
+                    <h3>{{ lunch_count or 0 }}</h3>
+                    <small>وجبات</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card summary-card dinner text-center">
+                <div class="card-body">
+                    <h6 class="card-title"><i class="fas fa-moon"></i> عشاء</h6>
+                    <h3>{{ dinner_count or 0 }}</h3>
+                    <small>وجبات</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card summary-card total text-center">
+                <div class="card-body">
+                    <h6 class="card-title"><i class="fas fa-coins"></i> إجمالي التكلفة</h6>
+                    <h3>{{ total_cost or 0 }} دج</h3>
+                    <small>لهذا اليوم</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Meals Table -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>التاريخ والوقت</th>
+                        <th>نوع الوجبة</th>
+                        <th>الوصفة</th>
+                        <th>عدد الحصص</th>
+                        <th>المكونات المستهلكة</th>
+                        <th>التكلفة المتوقعة</th>
+                        <th>الملاحظات</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if meals %}
+                        {% for meal in meals %}
+                        <tr>
+                            <td>{{ meal.record_date.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                {% if meal.meal_type == 'breakfast' %}
+                                <span class="badge bg-warning">إفطار</span>
+                                {% elif meal.meal_type == 'lunch' %}
+                                <span class="badge bg-info">غداء</span>
+                                {% elif meal.meal_type == 'dinner' %}
+                                <span class="badge bg-secondary">عشاء</span>
+                                {% elif meal.meal_type == 'snack' %}
+                                <span class="badge bg-primary">وجبة خفيفة</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ meal.recipe.name }}</strong><br>
+                                <small>{{ meal.recipe.description or '' }}</small>
+                            </td>
+                            <td class="text-end">{{ meal.servings }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" 
+                                        data-bs-target="#ingredientModal{{ meal.id }}">
+                                    <i class="fas fa-list"></i> عرض
+                                </button>
+                            </td>
+                            <td class="text-end">{{ "%.2f"|format(meal.expected_cost or 0) }} دج</td>
+                            <td>
+                                <small>{{ meal.notes or '-' }}</small>
+                            </td>
+                            <td>
+                                <!-- No edit/delete for meals - view only -->
+                            </td>
+                        </tr>
+
+                        <!-- Ingredients Modal -->
+                        <div class="modal fade" id="ingredientModal{{ meal.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">المكونات المستهلكة - {{ meal.recipe.name }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>الصنف</th>
+                                                    <th>الكمية</th>
+                                                    <th>الوحدة</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for ingredient in meal.recipe.ingredients %}
+                                                <tr>
+                                                    <td>{{ ingredient.item.name }}</td>
+                                                    <td class="text-end">{{ "%.2f"|format(ingredient.quantity * meal.servings / meal.recipe.servings) }}</td>
+                                                    <td>{{ ingredient.unit }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                            لا توجد وجبات مسجلة لهذا اليوم
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if pages > 1 %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if current_page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1">الأولى</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ current_page - 1 }}">السابقة</a>
+            </li>
+            {% endif %}
+            
+            {% for page_num in range(1, pages + 1) %}
+                {% if page_num == current_page %}
+                <li class="page-item active">
+                    <span class="page-link">{{ page_num }}</span>
+                </li>
+                {% else %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if current_page < pages %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ current_page + 1 }}">التالية</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ pages }}">الأخيرة</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

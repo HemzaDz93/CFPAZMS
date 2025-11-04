@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+
+{% block title %}تعديل الأصل - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    /* ============================================
+       MODERN GRADIENT DESIGN SYSTEM - FORM PAGES
+       ============================================ */
+    
+    /* Page Header Styling */
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: none;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Card Styling */
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        background: #ffffff;
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px 12px 0 0;
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: 0.3px;
+        padding: 1.25rem;
+    }
+
+    .card-header .card-title {
+        color: white;
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: 0.3px;
+        margin-bottom: 0;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    /* Section Headings */
+    .card-body h5.card-title {
+        font-weight: 700;
+        color: #667eea;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        letter-spacing: 0.3px;
+        margin-top: 0;
+    }
+
+    .card-body hr {
+        border: none;
+        border-top: 2px solid #e5e7eb;
+        margin-bottom: 1rem;
+    }
+
+    /* Form Controls */
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.8rem;
+        font-size: 0.95rem;
+    }
+
+    .form-control,
+    .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        background-color: #f9fafb;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        color: #374151;
+    }
+
+    .form-control:disabled,
+    .form-select:disabled {
+        background-color: #f3f4f6;
+        color: #9ca3af;
+        border-color: #d1d5db;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #667eea;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+        color: #374151;
+    }
+
+    textarea.form-control {
+        font-family: inherit;
+        resize: vertical;
+    }
+
+    textarea.form-control:focus {
+        border-color: #667eea;
+        background-color: #ffffff;
+    }
+
+    /* Validation Feedback */
+    .invalid-feedback {
+        color: #ef4444;
+        font-weight: 500;
+        font-size: 0.9rem;
+        display: block;
+        margin-top: 0.5rem;
+    }
+
+    /* Text Danger */
+    .text-danger {
+        color: #ef4444;
+        font-weight: 700;
+    }
+
+    /* Alert Styling */
+    .alert {
+        border: none;
+        border-radius: 12px;
+        border-left: 4px solid;
+        padding: 1.25rem;
+        font-weight: 500;
+        margin: 1.5rem 0;
+    }
+
+    .alert-info {
+        background-color: #ecf0ff;
+        border-left-color: #667eea;
+        color: #3b2667;
+    }
+
+    .alert-info strong {
+        color: #667eea;
+    }
+
+    .alert-info ul {
+        list-style-position: inside;
+    }
+
+    .alert-info ul li {
+        margin: 0.5rem 0;
+    }
+
+    /* Buttons */
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        color: white;
+    }
+
+    .btn-outline-secondary {
+        border: 2px solid #d1d5db;
+        color: #6b7280;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        padding: 0.75rem 1.5rem;
+        background-color: white;
+    }
+
+    .btn-outline-secondary:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: transparent;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    /* Button Group Styling */
+    .d-flex.gap-2 {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 2rem;
+        justify-content: flex-start;
+    }
+
+    /* Text Utilities */
+    .text-muted {
+        color: #9ca3af !important;
+        font-weight: 500;
+        font-size: 0.85rem;
+    }
+
+    .text-center {
+        text-align: center !important;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 2rem;
+        }
+
+        .card-header {
+            padding: 1rem;
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        .d-flex.gap-2 {
+            flex-direction: column;
+        }
+
+        .btn-primary,
+        .btn-outline-secondary {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="page-title">
+                <i class="fas fa-edit"></i> تعديل الأصل
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-cube"></i> {{ asset.asset_code }} - {{ asset.item.name }}
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation">
+                        <!-- Asset Information (Read-Only) -->
+                        <div class="mb-3">
+                            <h5 class="card-title">معلومات الأصل</h5>
+                            <hr>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="asset_code" class="form-label">كود الأصل</label>
+                                <input type="text" class="form-control" id="asset_code" name="asset_code" 
+                                       value="{{ asset.asset_code }}" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="item_name" class="form-label">الصنف</label>
+                                <input type="text" class="form-control" id="item_name" name="item_name" 
+                                       value="{{ asset.item.name }}" disabled>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="serial_number" class="form-label">الرقم التسلصلي</label>
+                            <input type="text" class="form-control" id="serial_number" name="serial_number" 
+                                   value="{{ asset.serial_number or 'لم يتم إدخال' }}" disabled>
+                            <small class="text-muted">لا يمكن تغيير الرقم التسلسلي</small>
+                        </div>
+
+                        <!-- Location & Status -->
+                        <div class="mb-3">
+                            <h5 class="card-title">الموقع والحالة</h5>
+                            <hr>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="location" class="form-label">الموقع/القسم <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="location" name="location" required 
+                                       value="{{ asset.location or '' }}"
+                                       placeholder="مثال: مكتب الإدارة / المطبخ / المستودع">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="status" class="form-label">الحالة <span class="text-danger">*</span></label>
+                                <select class="form-select" id="status" name="status" required>
+                                    <option value="in_service" {% if asset.status == 'in_service' %}selected{% endif %}>في الخدمة</option>
+                                    <option value="defective" {% if asset.status == 'defective' %}selected{% endif %}>معطل</option>
+                                    <option value="lost" {% if asset.status == 'lost' %}selected{% endif %}>مفقود</option>
+                                    <option value="returned" {% if asset.status == 'returned' %}selected{% endif %}>مسترجع</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Acquisition Details (Read-Only) -->
+                        <div class="mb-3">
+                            <h5 class="card-title">معلومات الاستحواذ</h5>
+                            <hr>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="acquisition_date" class="form-label">تاريخ الاستحواذ</label>
+                                <input type="date" class="form-control" id="acquisition_date" name="acquisition_date" 
+                                       value="{{ asset.acquisition_date.strftime('%Y-%m-%d') if asset.acquisition_date else '' }}" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="acquisition_price" class="form-label">سعر الاستحواذ (بالدينار)</label>
+                                <input type="number" class="form-control" id="acquisition_price" name="acquisition_price" 
+                                       value="{{ asset.acquisition_price or '' }}" step="0.01" disabled>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <strong><i class="fas fa-info-circle"></i> معلومات النظام:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>تاريخ الإنشاء: <strong>{{ asset.created_at.strftime('%Y-%m-%d %H:%M') }}</strong></li>
+                                <li>آخر تحديث: <strong>{{ asset.updated_at.strftime('%Y-%m-%d %H:%M') }}</strong></li>
+                            </ul>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> حفظ التغييرات
+                            </button>
+                            <a href="{{ url_for('equipment.assets') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

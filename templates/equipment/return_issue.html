@@ -1,0 +1,345 @@
+{% extends "base.html" %}
+
+{% block title %}إرجاع عتاد - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    /* ============================================
+       MODERN GRADIENT DESIGN SYSTEM - VIEW/FORM PAGES
+       ============================================ */
+    
+    /* Page Header Styling */
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: none;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Card Styling */
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        background: #ffffff;
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px 12px 0 0;
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: 0.3px;
+        padding: 1.25rem;
+    }
+
+    .card-header .card-title {
+        color: white;
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: 0.3px;
+        margin-bottom: 0;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    /* Section Headings */
+    .card-body h5 {
+        font-weight: 700;
+        color: #667eea;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        letter-spacing: 0.3px;
+    }
+
+    .card-body hr {
+        border: none;
+        border-top: 2px solid #e5e7eb;
+        margin-bottom: 1rem;
+    }
+
+    /* Form Controls */
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.8rem;
+        font-size: 0.95rem;
+    }
+
+    .form-control,
+    .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        background-color: #f9fafb;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        color: #374151;
+    }
+
+    .form-control:disabled,
+    .form-select:disabled {
+        background-color: #f3f4f6;
+        color: #9ca3af;
+        border-color: #d1d5db;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #667eea;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+        color: #374151;
+    }
+
+    textarea.form-control {
+        font-family: inherit;
+        resize: vertical;
+    }
+
+    textarea.form-control:focus {
+        border-color: #667eea;
+        background-color: #ffffff;
+    }
+
+    /* Validation Feedback */
+    .invalid-feedback {
+        color: #ef4444;
+        font-weight: 500;
+        font-size: 0.9rem;
+        display: block;
+        margin-top: 0.5rem;
+    }
+
+    /* Text Danger */
+    .text-danger {
+        color: #ef4444;
+        font-weight: 700;
+    }
+
+    /* Buttons */
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        color: white;
+    }
+
+    .btn-outline-secondary {
+        border: 2px solid #d1d5db;
+        color: #6b7280;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        padding: 0.75rem 1.5rem;
+        background-color: white;
+    }
+
+    .btn-outline-secondary:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: transparent;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+    }
+
+    .btn-warning:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+        background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+        color: white;
+    }
+
+    /* Button Group Styling */
+    .d-flex.gap-2 {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 2rem;
+        justify-content: flex-start;
+    }
+
+    /* Text Utilities */
+    .text-muted {
+        color: #9ca3af !important;
+        font-weight: 500;
+    }
+
+    .text-center {
+        text-align: center !important;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 2rem;
+        }
+
+        .card-header {
+            padding: 1rem;
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        .d-flex.gap-2 {
+            flex-direction: column;
+        }
+
+        .btn-primary,
+        .btn-outline-secondary,
+        .btn-warning {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="page-title">
+                <i class="fas fa-undo"></i> إرجاع عتاد
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-info"></i> بيانات التسليم
+                </div>
+                <div class="card-body">
+                    <!-- Issue Details -->
+                    <div class="mb-4">
+                        <h5 class="card-title">معلومات التسليم</h5>
+                        <hr>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">رقم التسليم</label>
+                            <input type="text" class="form-control" value="{{ issue.issue_number }}" disabled>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">كود الأصل</label>
+                            <input type="text" class="form-control" value="{{ issue.asset.asset_code if issue.asset else '-' }}" disabled>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">الموظف</label>
+                            <input type="text" class="form-control" value="{{ issue.issued_to.full_name if issue.issued_to else '-' }}" disabled>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">تاريخ التسليم</label>
+                            <input type="text" class="form-control" value="{{ issue.issue_date.strftime('%Y-%m-%d') if issue.issue_date else '-' }}" disabled>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">حالة الأصل عند التسليم</label>
+                        <input type="text" class="form-control" value="{{ issue.condition_on_issue or '-' }}" disabled>
+                    </div>
+
+                    <!-- Return Form -->
+                    <div class="mb-4">
+                        <h5 class="card-title">بيانات الإرجاع</h5>
+                        <hr>
+                    </div>
+
+                    <form method="POST" class="needs-validation">
+                        <div class="mb-3">
+                            <label for="condition_on_return" class="form-label">حالة الأصل عند الإرجاع <span class="text-danger">*</span></label>
+                            <select class="form-select" id="condition_on_return" name="condition_on_return" required>
+                                <option value="">-- اختر الحالة --</option>
+                                <option value="excellent">ممتازة</option>
+                                <option value="good">جيدة</option>
+                                <option value="fair">مقبولة</option>
+                                <option value="poor">ضعيفة</option>
+                            </select>
+                            <div class="invalid-feedback">يجب اختيار حالة الأصل</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">حالة الأصل</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="damaged" name="damaged" value="on">
+                                <label class="form-check-label" for="damaged">
+                                    الأصل معطل
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="lost" name="lost" value="on">
+                                <label class="form-check-label" for="lost">
+                                    الأصل مفقود
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">ملاحظات</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                      placeholder="أي ملاحظات حول الإرجاع...">{{ issue.notes or '' }}</textarea>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>تنبيه:</strong> تأكد من فحص الأصل وتسجيل حالته بدقة قبل تأكيد الإرجاع.
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check"></i> تأكيد الإرجاع
+                            </button>
+                            <a href="{{ url_for('equipment.issues') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

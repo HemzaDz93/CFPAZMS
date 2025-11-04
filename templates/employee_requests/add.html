@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+
+{% block title %}طلب منتجات جديد - نظام الإدارة{% endblock %}
+
+{% block extra_css %}
+<style>
+    .item-row {
+        background: #f9fafb;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border-left: 3px solid #667eea;
+    }
+    
+    .item-row button {
+        margin-top: 1.5rem;
+    }
+    
+    .search-box {
+        position: relative;
+    }
+    
+    .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-top: none;
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+    }
+    
+    .search-results.show {
+        display: block;
+    }
+    
+    .search-result-item {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    
+    .search-result-item:hover {
+        background: #f3f4f6;
+    }
+    
+    .selected-items-summary {
+        background: #e0e7ff;
+        border: 1px solid #667eea;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .item-tag {
+        display: inline-block;
+        background: #667eea;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        margin: 0.25rem;
+        font-size: 0.9rem;
+    }
+    
+    .item-tag .close {
+        margin-left: 0.5rem;
+        cursor: pointer;
+        color: white;
+    }
+    
+    .category-filter {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .category-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e5e7eb;
+        background: white;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 0.9rem;
+    }
+    
+    .category-btn:hover,
+    .category-btn.active {
+        border-color: #667eea;
+        background: #f3f4f6;
+        color: #667eea;
+    }
+    
+    .quantity-input {
+        width: 80px;
+    }
+    
+    .price-display {
+        font-weight: 700;
+        color: #667eea;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- الرأس -->
+    <div class="mb-4">
+        <h1>
+            <i class="fas fa-file-invoice"></i> طلب منتجات جديد
+        </h1>
+        <p class="text-muted">اختر المنتجات التي تريدها من المخزن</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('employee_requests.create_request') }}">
+        <div class="row">
+            <!-- عمود البحث والمنتجات -->
+            <div class="col-lg-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-search"></i> اختر المنتجات
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- مرشحات الأصناف -->
+                        <div>
+                            <label class="form-label fw-bold mb-2">
+                                <i class="fas fa-filter"></i> الأصناف
+                            </label>
+                            <div class="category-filter">
+                                <button type="button" class="category-btn active" onclick="filterByCategory('')">
+                                    الكل
+                                </button>
+                                {% for category in categories %}
+                                <button type="button" class="category-btn" onclick="filterByCategory('{{ category.id }}')">
+                                    {{ category.name }}
+                                </button>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- حقل البحث -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-barcode"></i> البحث عن منتج
+                            </label>
+                            <div class="search-box">
+                                <input 
+                                    type="text" 
+                                    id="search" 
+                                    class="form-control" 
+                                    placeholder="ابحث بالاسم أو الكود..."
+                                    onkeyup="searchItems()"
+                                >
+                                <div id="searchResults" class="search-results"></div>
+                            </div>
+                        </div>
+
+                        <!-- المنتجات المختارة -->
+                        <div class="mt-4">
+                            <label class="form-label fw-bold mb-3">
+                                <i class="fas fa-items"></i> المنتجات المختارة
+                            </label>
+                            <div id="itemsContainer">
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox" style="font-size: 2rem; opacity: 0.5;"></i>
+                                    <p>لم تختر أي منتجات بعد</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- عمود الملخص والملاحظات -->
+            <div class="col-lg-4">
+                <!-- ملخص الطلب -->
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <i class="fas fa-calculator"></i> ملخص الطلب
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="text-muted mb-1">عدد الأصناف</label>
+                            <div class="h4 mb-0" id="totalItems">0</div>
+                        </div>
+                        <hr>
+                        <div class="mb-3">
+                            <label class="text-muted mb-1">الكمية الإجمالية</label>
+                            <div class="h5 mb-0" id="totalQuantity">0</div>
+                        </div>
+                        <hr>
+                        <div>
+                            <label class="text-muted mb-1">القيمة الإجمالية</label>
+                            <div class="h5 mb-0 price-display" id="totalCost">0 د.ت</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- الملاحظات -->
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <i class="fas fa-sticky-note"></i> ملاحظات
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <textarea 
+                            name="notes" 
+                            class="form-control" 
+                            rows="4"
+                            placeholder="أضف أي ملاحظات إضافية حول طلبك"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <!-- أزرار الإجراءات -->
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                        <i class="fas fa-paper-plane"></i> إرسال الطلب
+                    </button>
+                    <a href="{{ url_for('employee_requests.list_requests') }}" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-times"></i> إلغاء
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+let selectedItems = {};
+let currentCategory = '';
+
+// البحث عن المنتجات
+function searchItems() {
+    const search = document.getElementById('search').value.toLowerCase();
+    const resultsDiv = document.getElementById('searchResults');
+    
+    // جلب المنتجات حتى لو كان البحث فارغاً عند تغيير الفئة
+    fetch(`{{ url_for('employee_requests.api_get_items') }}?search=${search}&category_id=${currentCategory}`)
+        .then(response => response.json())
+        .then(items => {
+            let html = '';
+            items.forEach(item => {
+                if (!selectedItems[item.id]) {
+                    html += `
+                        <div class="search-result-item" onclick="addItem('${item.id}', '${item.name}', '${item.code}', '${item.unit}', '${item.unit_price}', '${item.quantity_in_stock}')">
+                            <strong>${item.name}</strong>
+                            <small class="text-muted d-block">الكود: ${item.code} | المتاح: ${item.quantity_in_stock} ${item.unit}</small>
+                        </div>
+                    `;
+                }
+            });
+            
+            if (search.length > 0 || currentCategory) {
+                // عرض النتائج إذا كان هناك بحث أو فئة مختارة
+                if (html) {
+                    resultsDiv.innerHTML = html;
+                    resultsDiv.classList.add('show');
+                } else {
+                    resultsDiv.innerHTML = '<div class="search-result-item text-muted">لا توجد نتائج</div>';
+                    resultsDiv.classList.add('show');
+                }
+            } else {
+                resultsDiv.classList.remove('show');
+            }
+        });
+}
+
+// إضافة منتج
+function addItem(itemId, name, code, unit, unitPrice, availableQty) {
+    if (selectedItems[itemId]) {
+        alert('تم تحديد هذا المنتج بالفعل');
+        return;
+    }
+    
+    selectedItems[itemId] = {
+        name: name,
+        code: code,
+        unit: unit,
+        unitPrice: parseFloat(unitPrice),
+        quantity: 1,
+        availableQty: parseFloat(availableQty)
+    };
+    
+    renderItems();
+    document.getElementById('search').value = '';
+    document.getElementById('searchResults').classList.remove('show');
+}
+
+// حذف منتج
+function removeItem(itemId) {
+    delete selectedItems[itemId];
+    renderItems();
+}
+
+// تحديث الكمية
+function updateQuantity(itemId, quantity) {
+    quantity = parseFloat(quantity);
+    if (quantity > 0 && quantity <= selectedItems[itemId].availableQty) {
+        selectedItems[itemId].quantity = quantity;
+        renderItems();
+    } else {
+        alert(`يرجى إدخال كمية بين 0 و ${selectedItems[itemId].availableQty}`);
+    }
+}
+
+// عرض المنتجات المختارة
+function renderItems() {
+    const container = document.getElementById('itemsContainer');
+    const items = Object.entries(selectedItems);
+    
+    if (items.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-inbox" style="font-size: 2rem; opacity: 0.5;"></i>
+                <p>لم تختر أي منتجات بعد</p>
+            </div>
+        `;
+        updateSummary();
+        document.getElementById('submitBtn').disabled = true;
+        return;
+    }
+    
+    let html = '';
+    items.forEach(([itemId, item]) => {
+        const itemTotal = item.quantity * item.unitPrice;
+        html += `
+            <div class="item-row">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="fw-bold">${item.name}</div>
+                        <small class="text-muted">
+                            الكود: ${item.code} | المتاح: ${item.availableQty} ${item.unit}
+                        </small>
+                    </div>
+                    <div class="col-md-3">
+                        <input 
+                            type="number" 
+                            name="quantity" 
+                            class="form-control form-control-sm quantity-input"
+                            value="${item.quantity}"
+                            min="1"
+                            max="${item.availableQty}"
+                            onchange="updateQuantity('${itemId}', this.value)"
+                            placeholder="الكمية"
+                        >
+                    </div>
+                    <div class="col-md-2 text-end">
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removeItem('${itemId}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- حقول مخفية للبيانات -->
+                <input type="hidden" name="item_id" value="${itemId}">
+                <input type="hidden" name="quantity" value="${item.quantity}">
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+    updateSummary();
+    document.getElementById('submitBtn').disabled = false;
+}
+
+// تحديث الملخص
+function updateSummary() {
+    const items = Object.entries(selectedItems);
+    const totalItems = items.length;
+    const totalQuantity = items.reduce((sum, [_, item]) => sum + item.quantity, 0);
+    const totalCost = items.reduce((sum, [_, item]) => sum + (item.quantity * item.unitPrice), 0);
+    
+    document.getElementById('totalItems').textContent = totalItems;
+    document.getElementById('totalQuantity').textContent = totalQuantity;
+    document.getElementById('totalCost').textContent = totalCost.toFixed(3) + ' د.ت';
+}
+
+// تصفية حسب الصنف
+function filterByCategory(categoryId) {
+    currentCategory = categoryId;
+    
+    // تحديث الأزرار
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // مسح حقل البحث
+    document.getElementById('search').value = '';
+    
+    // تحميل المنتجات من الفئة المختارة
+    searchItemsForCategory();
+}
+
+// البحث عن المنتجات مع عرض النتائج
+function searchItemsForCategory() {
+    const search = document.getElementById('search').value.toLowerCase();
+    const resultsDiv = document.getElementById('searchResults');
+    
+    fetch(`{{ url_for('employee_requests.api_get_items') }}?search=${search}&category_id=${currentCategory}`)
+        .then(response => response.json())
+        .then(items => {
+            let html = '';
+            items.forEach(item => {
+                if (!selectedItems[item.id]) {
+                    html += `
+                        <div class="search-result-item" onclick="addItem('${item.id}', '${item.name}', '${item.code}', '${item.unit}', '${item.unit_price}', '${item.quantity_in_stock}')">
+                            <strong>${item.name}</strong>
+                            <small class="text-muted d-block">الكود: ${item.code} | المتاح: ${item.quantity_in_stock} ${item.unit}</small>
+                        </div>
+                    `;
+                }
+            });
+            
+            // Always show results when category filter is used, or when there's a search term
+            if (html) {
+                resultsDiv.innerHTML = html;
+                resultsDiv.classList.add('show');
+            } else {
+                resultsDiv.innerHTML = '<div class="search-result-item text-muted">لا توجد نتائج</div>';
+                resultsDiv.classList.add('show');
+            }
+        });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}إعداد المصادقة الثنائية{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">إعداد المصادقة الثنائية (2FA)</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <h5>الخطوة 1: امسح رمز QR</h5>
+                        <p class="text-muted">
+                            استخدم تطبيق Google Authenticator أو أي تطبيق TOTP آخر لمسح رمز QR التالي
+                        </p>
+                        <img src="data:image/png;base64,{{ qr_code }}" 
+                             alt="رمز QR للمصادقة الثنائية"
+                             class="img-fluid mb-3">
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <h5>الخطوة 2: أدخل الرمز</h5>
+                        <p class="text-muted">
+                            أدخل الرمز المؤقت الذي يظهر في تطبيقك للتحقق
+                        </p>
+                        
+                        <form method="POST" class="needs-validation" novalidate>
+                            <div class="form-group">
+                                <input type="text" 
+                                       name="token"
+                                       class="form-control text-center"
+                                       placeholder="أدخل الرمز المكون من 6 أرقام"
+                                       pattern="[0-9]{6}"
+                                       required>
+                                <div class="invalid-feedback">
+                                    يرجى إدخال رمز صالح مكون من 6 أرقام
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary mt-3">
+                                تحقق وتفعيل
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="alert alert-info" role="alert">
+                        <h6 class="alert-heading">ملاحظات هامة:</h6>
+                        <ul class="mb-0">
+                            <li>احتفظ برموز النسخ الاحتياطية التي ستظهر في الخطوة التالية</li>
+                            <li>قم بتخزين التطبيق على جهاز آمن</li>
+                            <li>لا تشارك رموز الدخول مع أي شخص</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // التحقق من صحة النموذج
+    const form = document.querySelector('.needs-validation');
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+    
+    // تنسيق حقل الرمز
+    const tokenInput = form.querySelector('input[name="token"]');
+    tokenInput.addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+    });
+});
+</script>
+{% endblock %}

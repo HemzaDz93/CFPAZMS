@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+
+{% block title %}تنبيهات تجاوز الحد - الوجبات{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- رأس الصفحة -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="page-title">🔔 تنبيهات تجاوز الحد</h2>
+        <div>
+            {% if show_resolved %}
+                <a href="{{ url_for('employee_meals.alerts_list') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-funnel"></i> التنبيهات النشطة فقط
+                </a>
+            {% else %}
+                <a href="{{ url_for('employee_meals.alerts_list', show_resolved='true') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-check-all"></i> عرض جميع التنبيهات
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ملخص سريع -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">التنبيهات النشطة</h6>
+                    <h2 class="text-danger mb-2">{{ alerts|length }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">إجمالي المبلغ المتجاوز</h6>
+                    <h2 class="text-warning mb-2">{{ "%.2f"|format(alerts|map(attribute='current_amount')|sum) }} دج</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- جدول التنبيهات -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                {% if show_resolved %}
+                    جميع التنبيهات
+                {% else %}
+                    التنبيهات النشطة
+                {% endif %}
+            </h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th width="20%">الموظف</th>
+                        <th width="15%">الحد المسموح</th>
+                        <th width="15%">المبلغ الحالي</th>
+                        <th width="15%">التجاوز</th>
+                        <th width="15%">تاريخ التنبيه</th>
+                        <th width="20%">الحالة / الإجراء</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if alerts %}
+                        {% for alert in alerts %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('employee_meals.employee_summary', employee_id=alert.user_id) }}" class="text-decoration-none">
+                                        {{ alert.user.full_name }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ "%.2f"|format(alert.alert_threshold) }} دج</span>
+                                </td>
+                                <td>
+                                    <strong class="text-danger">{{ "%.2f"|format(alert.current_amount) }} دج</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning">
+                                        +{{ "%.2f"|format(alert.current_amount - alert.alert_threshold) }} دج
+                                    </span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ alert.alert_date.strftime('%d/%m/%Y %H:%M') }}</small>
+                                </td>
+                                <td>
+                                    {% if not alert.is_resolved %}
+                                        <button class="btn btn-sm btn-success resolve-btn" data-alert-id="{{ alert.id }}" title="تحديد التنبيه كمحل">
+                                            <i class="bi bi-check-circle"></i> محل
+                                        </button>
+                                    {% else %}
+                                        <span class="badge bg-success">✓ تم حله</span>
+                                        <br>
+                                        <small class="text-muted">{{ alert.resolved_date.strftime('%d/%m/%Y') }}</small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                                <p class="mt-2">لا توجد تنبيهات</p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- التصفح -->
+    {% if pages > 1 %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if current_page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('employee_meals.alerts_list', page=1, show_resolved=show_resolved) }}">الأولى</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('employee_meals.alerts_list', page=current_page-1, show_resolved=show_resolved) }}">السابقة</a>
+                    </li>
+                {% endif %}
+
+                {% for p in range(max(1, current_page-2), min(pages+1, current_page+3)) %}
+                    {% if p == current_page %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ p }}</span>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('employee_meals.alerts_list', page=p, show_resolved=show_resolved) }}">{{ p }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if current_page < pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('employee_meals.alerts_list', page=current_page+1, show_resolved=show_resolved) }}">التالية</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('employee_meals.alerts_list', page=pages, show_resolved=show_resolved) }}">الأخيرة</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+
+    <!-- الأزرار -->
+    <div class="row mt-4">
+        <div class="col-md-8 mx-auto">
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a href="{{ url_for('employee_meals.meals_list') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> العودة للقائمة
+                </a>
+                <a href="{{ url_for('employee_meals.daily_registration') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> تسجيل وجبات
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal لتحديد التنبيه -->
+<div class="modal fade" id="resolveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تحديد التنبيه</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="resolveForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="resolveNotes" class="form-label">ملاحظات</label>
+                        <textarea class="form-control" id="resolveNotes" name="notes" rows="3" placeholder="مثال: تم تسديد المبلغ من الراتب"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">تأكيد التحديد</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.resolve-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const alertId = this.dataset.alertId;
+        const modal = new bootstrap.Modal(document.getElementById('resolveModal'));
+        
+        document.getElementById('resolveForm').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const notes = document.getElementById('resolveNotes').value;
+            const formData = new FormData();
+            formData.append('notes', notes);
+            
+            try {
+                const response = await fetch(`{{ url_for('employee_meals.resolve_alert', alert_id='') }}${alertId}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('خطأ: ' + data.message);
+                }
+            } catch (error) {
+                alert('خطأ في العملية: ' + error.message);
+            }
+        };
+        
+        modal.show();
+    });
+});
+</script>
+{% endblock %}

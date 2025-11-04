@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}ملخص الأجور والوجبات{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-money-check"></i> ملخص الأجور والوجبات</h1>
+    </div>
+
+    <!-- البحث حسب الفترة -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <label for="period" class="form-label">فترة الراتب</label>
+                    <input type="month" id="period" name="period" class="form-control" value="{{ period }}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-primary w-100">بحث</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ملخص عام -->
+    {% set total_cost = records|map(attribute='total_meal_cost')|sum %}
+    {% set total_subsidy = records|map(attribute='total_subsidy_amount')|sum %}
+    {% set total_paid = records|map(attribute='total_employee_payment')|sum %}
+    
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">إجمالي تكاليف الوجبات</h6>
+                    <h3 class="text-primary">{{ "%.2f"|format(total_cost) }} د.ج</h3>
+                    <small>الفترة المحددة</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">إجمالي الدعم الحكومي</h6>
+                    <h3 class="text-success">{{ "%.2f"|format(total_subsidy) }} د.ج</h3>
+                    <small>المبلغ المدعوم</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">المبلغ المستحق من الموظفين</h6>
+                    <h3 class="text-warning">{{ "%.2f"|format(total_paid) }} د.ج</h3>
+                    <small>المبلغ المتبقي</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">عدد الموظفين</h6>
+                    <h3 class="text-info">{{ records|length }}</h3>
+                    <small>استفادوا من الدعم</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- جدول التفاصيل -->
+    <div class="card">
+        <div class="card-header bg-light">
+            <h6 class="mb-0">تفاصيل الموظفين والوجبات</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>الموظف</th>
+                        <th>القسم</th>
+                        <th>عدد الوجبات</th>
+                        <th>الوجبات المجانية</th>
+                        <th>الوجبات المدعومة</th>
+                        <th>إجمالي التكلفة</th>
+                        <th>الدعم الممنوح</th>
+                        <th>المبلغ المستحق</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td><strong>{{ record.user.full_name }}</strong></td>
+                        <td>{{ record.user.department or '-' }}</td>
+                        <td><span class="badge bg-info">{{ record.total_meals_consumed }}</span></td>
+                        <td>{{ record.free_meals_count }}</td>
+                        <td>{{ record.subsidized_meals_count }}</td>
+                        <td>
+                            <strong>{{ "%.2f"|format(record.total_meal_cost) }} د.ج</strong>
+                        </td>
+                        <td class="text-success">
+                            <strong>{{ "%.2f"|format(record.total_subsidy_amount) }} د.ج</strong>
+                        </td>
+                        <td class="text-warning">
+                            <strong>{{ "%.2f"|format(record.total_employee_payment) }} د.ج</strong>
+                        </td>
+                        <td>
+                            {% if record.is_processed %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check"></i> معالج
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning">
+                                    <i class="fas fa-hourglass"></i> قيد الانتظار
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">لا توجد بيانات للفترة المحددة</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- الترقيم -->
+    {% if pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% for page_num in range(1, pages + 1) %}
+            <li class="page-item {% if page_num == current_page %}active{% endif %}">
+                <a class="page-link" href="?page={{ page_num }}{% if period %}&period={{ period }}{% endif %}">{{ page_num }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    <!-- ملاحظات أسفل الجدول -->
+    <div class="alert alert-info mt-4" role="alert">
+        <h6 class="alert-heading"><i class="fas fa-note-sticky"></i> ملاحظات هامة</h6>
+        <ul class="mb-0">
+            <li>الأرقام أعلاه تشمل جميع الموظفين الذين تناولوا وجبات خلال الفترة المحددة</li>
+            <li>الدعم يتضمن جميع أنواع الخصومات والوجبات المجانية</li>
+            <li>المبلغ المستحق هو ما يجب على الموظف دفعه بعد تطبيق الدعم</li>
+            <li>يمكن ربط هذه البيانات مع نظام الراتب للخصم المباشر</li>
+        </ul>
+    </div>
+</div>
+
+{% endblock %}

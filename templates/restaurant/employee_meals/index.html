@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة معلومات وجبات الموظفين{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3">
+                <i class="fas fa-utensils me-2"></i>لوحة معلومات وجبات الموظفين
+            </h1>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-primary">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase">إجمالي المعاملات</h6>
+                    <h3 class="text-primary">{{ total_transactions }}</h3>
+                    <small class="text-muted">معاملة</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-success">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase">إجمالي التكلفة</h6>
+                    <h3 class="text-success">{{ "%.2f"|format(total_cost or 0) }} دج</h3>
+                    <small class="text-muted">الجميع</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-warning">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase">المتأخرة</h6>
+                    <h3 class="text-warning">{{ "%.2f"|format(unsettled_cost or 0) }} دج</h3>
+                    <small class="text-muted">غير مسددة</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-danger">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase">التنبيهات النشطة</h6>
+                    <h3 class="text-danger">{{ active_alerts }}</h3>
+                    <small class="text-muted">تنبيهات</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">الإجراءات السريعة</h5>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('employee_meals.daily_registration') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>تسجيل وجبة جديدة
+                        </a>
+                        <a href="{{ url_for('employee_meals.meals_list') }}" class="btn btn-info">
+                            <i class="fas fa-list me-2"></i>عرض السجل
+                        </a>
+                        <a href="{{ url_for('employee_meals.payments_list') }}" class="btn btn-success">
+                            <i class="fas fa-credit-card me-2"></i>إدارة الدفعات
+                        </a>
+                        <a href="{{ url_for('employee_meals.alerts_list') }}" class="btn btn-warning">
+                            <i class="fas fa-bell me-2"></i>عرض التنبيهات
+                        </a>
+                        <a href="{{ url_for('employee_meals.monthly_report') }}" class="btn btn-secondary">
+                            <i class="fas fa-file-pdf me-2"></i>تقرير شهري
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>آخر المعاملات
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>الموظف</th>
+                                    <th>التاريخ والوقت</th>
+                                    <th>عدد الوجبات</th>
+                                    <th>التكلفة</th>
+                                    <th>الحالة</th>
+                                    <th>الملاحظات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in recent_transactions %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ transaction.user.full_name if transaction.user else '-' }}</strong>
+                                    </td>
+                                    <td>{{ transaction.transaction_date.strftime('%d/%m/%Y %H:%M') if transaction.transaction_date else '-' }}</td>
+                                    <td class="text-center">
+                                        {% set meal_count = (transaction.meal_cost / 2.5)|round(0)|int %}
+                                        <span class="badge bg-primary">{{ meal_count }}</span>
+                                    </td>
+                                    <td class="text-end">{{ "%.2f"|format(transaction.final_cost or 0) }} دج</td>
+                                    <td>
+                                        {% if transaction.is_settled %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check me-1"></i>مسددة
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-clock me-1"></i>معلقة
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ transaction.notes or '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>لا توجد معاملات حتى الآن
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('employee_meals.meals_list') }}" class="btn btn-sm btn-outline-primary">
+                        عرض الكل
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

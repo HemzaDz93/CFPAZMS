@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+
+{% block title %}أوامر الشراء - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    /* ============================================
+       MODERN GRADIENT DESIGN SYSTEM
+       ============================================ */
+    
+    /* Page Header Styling */
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: none;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-title i {
+        margin-left: 1rem;
+    }
+
+    /* Card Styling */
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        background: #ffffff;
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px 12px 0 0;
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: 0.3px;
+        padding: 1.25rem;
+    }
+
+    .card-header .card-title {
+        color: white;
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: 0.3px;
+        margin-bottom: 0;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    /* Form Controls */
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.8rem;
+        font-size: 0.95rem;
+    }
+
+    .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        background-color: #f9fafb;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-select:focus {
+        border-color: #667eea;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+
+    /* Table Styling */
+    .table-responsive {
+        border-radius: 0 0 12px 12px;
+    }
+
+    table.table {
+        margin-bottom: 0;
+    }
+
+    table.table thead tr {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+
+    table.table thead th,
+    table.table thead.table-light th {
+        color: white;
+        font-weight: 700;
+        border: none;
+        padding: 1.25rem;
+        text-align: right;
+        letter-spacing: 0.3px;
+        font-size: 1rem;
+        background: transparent;
+    }
+
+    table.table tbody tr {
+        border-bottom: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+
+    table.table tbody tr:hover {
+        background-color: #f9fafb;
+        box-shadow: inset 4px 0 0 #667eea;
+    }
+
+    table.table tbody td {
+        padding: 1.25rem;
+        vertical-align: middle;
+        text-align: right;
+        color: #374151;
+        font-weight: 500;
+    }
+
+    table.table strong {
+        color: #667eea;
+    }
+
+    table.table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    /* Badge Styling */
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        letter-spacing: 0.2px;
+        display: inline-block;
+    }
+
+    .bg-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    .bg-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+
+    .bg-info {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        color: white;
+    }
+
+    .bg-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+
+    .bg-secondary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    /* Buttons */
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+
+    .btn-outline-primary {
+        border: 2px solid #667eea;
+        color: #667eea;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        padding: 0.75rem 1.5rem;
+    }
+
+    .btn-outline-primary:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: transparent;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-sm.btn-info {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(6, 182, 212, 0.2);
+    }
+
+    .btn-sm.btn-info:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+    }
+
+    /* Pagination Styling */
+    .pagination {
+        gap: 0.5rem;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .page-item .page-link {
+        border: 2px solid #e5e7eb;
+        color: #667eea;
+        background-color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 0.5rem 0.75rem;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .page-item .page-link:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: transparent;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .page-item.active .page-link {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: transparent;
+        color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .page-item.disabled .page-link {
+        color: #9ca3af;
+        background-color: #f3f4f6;
+        border-color: #e5e7eb;
+        cursor: not-allowed;
+    }
+
+    /* Alert Styling */
+    .alert {
+        border: none;
+        border-radius: 12px;
+        border-left: 4px solid;
+        padding: 1.25rem;
+        font-weight: 500;
+    }
+
+    .alert-info {
+        background-color: #ecf0ff;
+        border-left-color: #667eea;
+        color: #3b2667;
+    }
+
+    .alert-info i {
+        margin-left: 0.5rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 2rem;
+        }
+
+        table.table thead th {
+            padding: 1rem 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        table.table tbody td {
+            padding: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="page-title">
+                    <i class="fas fa-clipboard-list"></i> أوامر الشراء
+                </h1>
+                <a href="{{ url_for('suppliers.add_order') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> أمر شراء جديد
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="row g-3" id="filterForm">
+                        <div class="col-md-6">
+                            <label for="status_filter" class="form-label">حالة الأمر</label>
+                            <select class="form-select" id="status_filter" name="status">
+                                <option value="">جميع الحالات</option>
+                                <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>قيد الانتظار</option>
+                                <option value="confirmed" {% if selected_status == 'confirmed' %}selected{% endif %}>مؤكد</option>
+                                <option value="delivered" {% if selected_status == 'delivered' %}selected{% endif %}>مستلم</option>
+                                <option value="cancelled" {% if selected_status == 'cancelled' %}selected{% endif %}>ملغى</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <button type="submit" class="btn btn-outline-primary mt-4">
+                                <i class="fas fa-filter"></i> تطبيق الفلتر
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">قائمة أوامر الشراء</h5>
+                </div>
+                <div class="card-body">
+                    {% if orders.items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>رقم الأمر</th>
+                                    <th>اسم المورد</th>
+                                    <th>تاريخ الأمر</th>
+                                    <th>تاريخ التسليم المتوقع</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders.items %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ order.po_number }}</strong>
+                                    </td>
+                                    <td>{{ order.supplier.name if order.supplier else '-' }}</td>
+                                    <td>{{ order.order_date.strftime('%Y-%m-%d') if order.order_date else '-' }}</td>
+                                    <td>{{ order.expected_delivery.strftime('%Y-%m-%d') if order.expected_delivery else '-' }}</td>
+                                    <td>
+                                        {% if order.status == 'pending' %}
+                                            <span class="badge bg-warning">قيد الانتظار</span>
+                                        {% elif order.status == 'confirmed' %}
+                                            <span class="badge bg-info">مؤكد</span>
+                                        {% elif order.status == 'delivered' %}
+                                            <span class="badge bg-success">مستلم</span>
+                                        {% elif order.status == 'cancelled' %}
+                                            <span class="badge bg-danger">ملغى</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ order.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('suppliers.edit_order', order_id=order.id) }}" class="btn btn-sm btn-info" title="تعديل">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if orders.pages > 1 %}
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if orders.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1&status={{ selected_status or '' }}">الأولى</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ orders.prev_num }}&status={{ selected_status or '' }}">السابقة</a>
+                            </li>
+                            {% endif %}
+
+                            {% for page_num in orders.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num == orders.page %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page_num }}</span>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_num }}&status={{ selected_status or '' }}">{{ page_num }}</a>
+                                    </li>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if orders.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ orders.next_num }}&status={{ selected_status or '' }}">التالية</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ orders.pages }}&status={{ selected_status or '' }}">الأخيرة</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    {% else %}
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle"></i> لا توجد أوامر شراء
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

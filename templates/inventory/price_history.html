@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}سجل الأسعار التاريخي{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3">
+                    <i class="fas fa-history me-2"></i>سجل الأسعار التاريخي
+                </h1>
+                <a href="{{ url_for('inventory.items') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>العودة
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">الفلاتر</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="{{ url_for('inventory.price_history') }}">
+                        <div class="mb-3">
+                            <label for="item_id" class="form-label">الصنف</label>
+                            <select id="item_id" name="item_id" class="form-select">
+                                <option value="">جميع الأصناف</option>
+                                {% for item in items %}
+                                <option value="{{ item.id }}" {% if request.args.get('item_id')|int == item.id %}selected{% endif %}>
+                                    {{ item.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="start_date" class="form-label">من التاريخ</label>
+                            <input type="date" id="start_date" name="start_date" class="form-control" 
+                                   value="{{ request.args.get('start_date', '') }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="end_date" class="form-label">إلى التاريخ</label>
+                            <input type="date" id="end_date" name="end_date" class="form-control" 
+                                   value="{{ request.args.get('end_date', '') }}">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-2"></i>بحث
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="col-md-8">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="card border-left-primary">
+                        <div class="card-body">
+                            <h6 class="text-muted">متوسط السعر</h6>
+                            <h3 class="text-primary">{{ "%.2f"|format(average_price) }} دج</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-left-success">
+                        <div class="card-body">
+                            <h6 class="text-muted">أعلى سعر</h6>
+                            <h3 class="text-success">{{ "%.2f"|format(max_price) }} دج</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-left-warning">
+                        <div class="card-body">
+                            <h6 class="text-muted">أقل سعر</h6>
+                            <h3 class="text-warning">{{ "%.2f"|format(min_price) }} دج</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-left-info">
+                        <div class="card-body">
+                            <h6 class="text-muted">عدد التغييرات</h6>
+                            <h3 class="text-info">{{ price_changes|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Price History Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>رسم تطور الأسعار
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="priceHistoryChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Price History Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-table me-2"></i>تفاصيل السعر التاريخي
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if price_changes %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>الصنف</th>
+                                    <th>السعر</th>
+                                    <th>نسبة التغيير</th>
+                                    <th>التاريخ</th>
+                                    <th>المصدر</th>
+                                    <th>المورد</th>
+                                    <th>الملاحظات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for history in price_changes %}
+                                <tr>
+                                    <td>{{ history.item.name if history.item else '-' }}</td>
+                                    <td class="text-end font-weight-bold">{{ "%.2f"|format(history.unit_price or 0) }} دج</td>
+                                    <td class="text-center">
+                                        {% if history.price_change_percentage %}
+                                            {% if history.price_change_percentage > 0 %}
+                                                <span class="badge bg-danger">
+                                                    <i class="fas fa-arrow-up me-1"></i>{{ history.price_change_percentage|round(1) }}%
+                                                </span>
+                                            {% elif history.price_change_percentage < 0 %}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-arrow-down me-1"></i>{{ history.price_change_percentage|round(1) }}%
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">ثابت</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-secondary">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ history.price_date.strftime('%d/%m/%Y %H:%M') if history.price_date else '-' }}</td>
+                                    <td>{{ history.price_source or '-' }}</td>
+                                    <td>{{ history.supplier.name if history.supplier else '-' }}</td>
+                                    <td>{{ history.notes or '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>لا يوجد سجل سعر متاح
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('priceHistoryChart').getContext('2d');
+    
+    // Extract price changes from table if it exists
+    const tableRows = document.querySelectorAll('table tbody tr');
+    const chartData = [];
+    const chartLabels = [];
+    
+    if (tableRows.length > 0) {
+        tableRows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 4) {
+                const dateText = cells[3].textContent.trim();
+                const priceText = cells[1].textContent.trim().replace(' دج', '');
+                const price = parseFloat(priceText) || 0;
+                
+                chartLabels.push(dateText);
+                chartData.push(price);
+            }
+        });
+        
+        if (chartData.length > 0) {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'السعر',
+                        data: chartData,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#3498db',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'السعر'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}الوصل الشهري - {{ employee.full_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- رأس الوصل -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="page-title">🧾 الوصل الشهري للوجبات</h2>
+                <button class="btn btn-primary" onclick="window.print()">
+                    <i class="bi bi-printer"></i> طباعة
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- بيانات الموظف والفترة -->
+    <div class="card shadow-sm mb-4 border-0">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-muted">الموظف</h6>
+                    <h4>{{ employee.full_name }}</h4>
+                    <p class="text-muted">
+                        <small>المنصب: {{ employee.position or employee.role }}</small><br>
+                        <small>القسم: {{ employee.department or 'غير محدد' }}</small>
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h6 class="text-muted">الفترة</h6>
+                    <h4>{{ start_date.strftime('%B %Y') }}</h4>
+                    <p class="text-muted">
+                        <small>من: {{ start_date.strftime('%d/%m/%Y') }}</small><br>
+                        <small>إلى: {{ end_date.strftime('%d/%m/%Y') }}</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ملخص الأرقام -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">عدد الوجبات</h6>
+                    <h2 class="text-primary mb-2">{{ total_meals }}</h2>
+                    <small class="text-muted">وجبة</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">التكلفة الكلية</h6>
+                    <h2 class="text-success mb-2">{{ "%.2f"|format(total_cost) }}</h2>
+                    <small class="text-muted">دج</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">المدفوعة</h6>
+                    <h2 class="text-info mb-2">{{ settled_count }}</h2>
+                    <small class="text-muted">{{ "%.2f"|format(settled_count * meal_cost_unit) }} دج</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">المتبقية</h6>
+                    <h2 class="text-danger mb-2">{{ unsettled_count }}</h2>
+                    <small class="text-muted">{{ "%.2f"|format(unsettled_cost) }} دج</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- تفاصيل العمليات -->
+    <div class="card shadow-sm mb-4 border-0">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">تفاصيل الوجبات</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th width="15%">التاريخ</th>
+                        <th width="15%">عدد الوجبات</th>
+                        <th width="15%">السعر الوحدة</th>
+                        <th width="20%">الإجمالي</th>
+                        <th width="15%">الحالة</th>
+                        <th width="20%">الملاحظات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if transactions %}
+                        {% for trans in transactions %}
+                            <tr>
+                                <td>{{ trans.transaction_date.strftime('%d/%m/%Y') }}</td>
+                                <td>
+                                    <span class="badge bg-info">{{ (trans.meal_cost / meal_cost_unit) | int }}</span>
+                                </td>
+                                <td>{{ meal_cost_unit }} دج</td>
+                                <td><strong>{{ "%.2f"|format(trans.final_cost) }} دج</strong></td>
+                                <td>
+                                    {% if trans.is_settled %}
+                                        <span class="badge bg-success">✓ مدفوعة</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">معلقة</span>
+                                    {% endif %}
+                                </td>
+                                <td><small class="text-muted">{{ trans.notes[:20] if trans.notes else '-' }}</small></td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-3">
+                                لا توجد عمليات في هذه الفترة
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+                <tfoot class="table-light">
+                    <tr>
+                        <th colspan="2">الإجمالي</th>
+                        <th>{{ meal_cost_unit }} دج</th>
+                        <th><strong>{{ "%.2f"|format(total_cost) }} دج</strong></th>
+                        <th colspan="2"></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- ملاحظات -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <h6 class="text-muted mb-3">ملاحظات مهمة:</h6>
+            <ul class="small">
+                <li>يتم احتساب الوجبة الواحدة بـ <strong>{{ meal_cost_unit }} دج</strong> ثابتة</li>
+                <li>يتم خصم المبلغ المتبقي (<strong>{{ "%.2f"|format(unsettled_cost) }} دج</strong>) من الراتب الشهري</li>
+                <li>هذا الوصل صالح كإثبات دفع الموظف</li>
+                <li>في حالة الاستفسار، يرجى التواصل مع إدارة الموارد البشرية</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- الأزرار -->
+    <div class="row mt-4">
+        <div class="col-md-8 mx-auto">
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a href="{{ url_for('employee_meals.employee_summary', employee_id=employee.id) }}" class="btn btn-primary">
+                    <i class="bi bi-bar-chart"></i> الملخص الشامل
+                </a>
+                <a href="{{ url_for('employee_meals.meals_list') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> العودة للقائمة
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .btn, .navbar, .no-print {
+            display: none !important;
+        }
+        body {
+            background: white;
+        }
+        .container-fluid {
+            max-width: 100%;
+        }
+    }
+</style>
+{% endblock %}

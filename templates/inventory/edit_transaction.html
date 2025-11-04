@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+
+{% block title %}تعديل العملية - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    /* ============================================
+       MODERN GRADIENT DESIGN SYSTEM - FORM PAGES
+       ============================================ */
+    
+    /* Page Header Styling */
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: none;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Card Styling */
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        background: #ffffff;
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+    }
+
+    .card:hover {
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px 12px 0 0;
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: 0.3px;
+        padding: 1.25rem;
+    }
+
+    .card-header .card-title {
+        color: white;
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: 0.3px;
+        margin-bottom: 0;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    /* Form Controls */
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.8rem;
+        font-size: 0.95rem;
+    }
+
+    .fw-bold {
+        font-weight: 700;
+    }
+
+    .form-control,
+    .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        background-color: #f9fafb;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        color: #374151;
+    }
+
+    .form-control:disabled,
+    .form-select:disabled {
+        background-color: #f3f4f6;
+        color: #9ca3af;
+        border-color: #d1d5db;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #667eea;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+        color: #374151;
+    }
+
+    textarea.form-control {
+        font-family: inherit;
+        resize: vertical;
+    }
+
+    textarea.form-control:focus {
+        border-color: #667eea;
+        background-color: #ffffff;
+    }
+
+    /* Input Group */
+    .input-group-text {
+        background-color: #f9fafb;
+        border: 2px solid #e5e7eb;
+        border-left: none;
+        color: #6b7280;
+        font-weight: 600;
+    }
+
+    .input-group > .form-control {
+        border-right: none;
+    }
+
+    /* Validation Feedback */
+    .invalid-feedback {
+        color: #ef4444;
+        font-weight: 500;
+        font-size: 0.9rem;
+        display: block;
+        margin-top: 0.5rem;
+    }
+
+    /* Text Danger */
+    .text-danger {
+        color: #ef4444;
+        font-weight: 700;
+    }
+
+    /* Buttons */
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        margin-right: 0.75rem;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        border: none;
+        color: white;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Text Utilities */
+    .text-muted {
+        color: #9ca3af !important;
+        font-weight: 500;
+        font-size: 0.85rem;
+    }
+
+    .text-end {
+        text-align: right !important;
+    }
+
+    /* HR Element */
+    hr {
+        border: none;
+        border-top: 2px solid #e5e7eb;
+        margin: 1.5rem 0;
+    }
+
+    /* Alert Styling */
+    .alert-info {
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(8, 145, 178, 0.05) 100%);
+        border: 2px solid #06b6d4;
+        border-left: 4px solid #06b6d4;
+        border-radius: 10px;
+        color: #0891b2;
+        font-weight: 600;
+        padding: 1rem;
+        margin-top: 0;
+    }
+
+    .alert-info i {
+        margin-left: 0.5rem;
+        color: #0891b2;
+    }
+
+    .alert-info strong {
+        color: #0891b2;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 2rem;
+        }
+
+        .card-header {
+            padding: 1rem;
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            width: 100%;
+            margin-right: 0 !important;
+            margin-bottom: 0.5rem;
+        }
+
+        .text-end {
+            text-align: left !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h1 class="page-title">
+                <i class="fas fa-edit"></i> تعديل العملية
+            </h1>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{{ url_for('inventory.transactions') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> إلغاء
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" class="needs-validation" novalidate>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="reference" class="form-label fw-bold">رقم المرجع <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="reference" value="{{ transaction.reference_number }}" disabled>
+                        <small class="text-muted">لا يمكن تغيير رقم المرجع</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="date" class="form-label fw-bold">التاريخ <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="date" value="{{ transaction.transaction_date.strftime('%d/%m/%Y %H:%M') }}" disabled>
+                        <small class="text-muted">لا يمكن تغيير التاريخ</small>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="item" class="form-label fw-bold">الصنف <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="item" value="{{ transaction.item.code }} - {{ transaction.item.name }}" disabled>
+                        <small class="text-muted">لا يمكن تغيير الصنف</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="type" class="form-label fw-bold">نوع العملية <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="type" value="
+                            {% if transaction.transaction_type == 'purchase' %}ورود
+                            {% elif transaction.transaction_type == 'issue' %}صرف
+                            {% elif transaction.transaction_type == 'transfer' %}تحويل
+                            {% elif transaction.transaction_type == 'adjustment' %}تسوية
+                            {% elif transaction.transaction_type == 'return' %}إرجاع
+                            {% endif %}" disabled>
+                        <small class="text-muted">لا يمكن تغيير نوع العملية</small>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="quantity" class="form-label fw-bold">الكمية <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="quantity" name="quantity" 
+                                   value="{{ transaction.quantity }}" step="0.01" required>
+                            <span class="input-group-text">{{ transaction.item.unit }}</span>
+                        </div>
+                        <small class="text-muted d-block mt-1">الكمية الحالية: {{ transaction.quantity }}</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="unit_price" class="form-label fw-bold">سعر الوحدة</label>
+                        <input type="number" class="form-control" id="unit_price" name="unit_price" 
+                               value="{{ transaction.unit_price or '' }}" step="0.01">
+                        <small class="text-muted">اتركه فارغاً إذا لم يكن هناك سعر</small>
+                    </div>
+                </div>
+
+                {% if transaction.from_location or transaction.to_location %}
+                <div class="row mb-3">
+                    {% if transaction.from_location %}
+                    <div class="col-md-6">
+                        <label for="from_location" class="form-label fw-bold">من</label>
+                        <input type="text" class="form-control" id="from_location" value="{{ transaction.from_location }}" disabled>
+                    </div>
+                    {% endif %}
+                    {% if transaction.to_location %}
+                    <div class="col-md-6">
+                        <label for="to_location" class="form-label fw-bold">إلى</label>
+                        <input type="text" class="form-control" id="to_location" value="{{ transaction.to_location }}" disabled>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label for="description" class="form-label fw-bold">الملاحظات</label>
+                        <textarea class="form-control" id="description" name="description" rows="4">{{ transaction.description or '' }}</textarea>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> حفظ التغييرات
+                        </button>
+                        <a href="{{ url_for('inventory.transactions') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> إلغاء
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Info Box -->
+    <div class="alert alert-info mt-4">
+        <i class="fas fa-info-circle"></i> <strong>ملاحظة:</strong> يمكنك تعديل الكمية والسعر والملاحظات فقط. سيتم تحديث المخزون تلقائياً بناءً على الفرق في الكمية.
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}دعم ووجبات الموظفين{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-utensils"></i> دعم ووجبات الموظفين</h1>
+        {% if has_permission('restaurant_add_subsidy') %}
+        <a href="{{ url_for('restaurant_advanced.add_subsidy') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> إضافة دعم جديد
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- التصفية -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="active_only" name="active_only" 
+                           value="on" {% if active_only %}checked{% endif %} onchange="this.form.submit()">
+                    <label class="form-check-label" for="active_only">
+                        الدعم النشط فقط
+                    </label>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- جدول الدعم -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>الموظف</th>
+                        <th>نوع الدعم</th>
+                        <th>قيمة الدعم</th>
+                        <th>فترة الدعم</th>
+                        <th>السبب</th>
+                        <th>الموافق عليه من</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for subsidy in subsidies %}
+                    <tr>
+                        <td>
+                            <strong>{{ subsidy.user.full_name }}</strong>
+                            <br>
+                            <small class="text-muted">{{ subsidy.user.department or '-' }}</small>
+                        </td>
+                        <td>
+                            {% set subsidy_labels = {
+                                'percentage_discount': 'خصم نسبي',
+                                'fixed_amount': 'مبلغ ثابت',
+                                'free_meals': 'وجبات مجانية',
+                                'special_diet': 'نظام غذائي خاص'
+                            } %}
+                            <span class="badge bg-info">{{ subsidy_labels.get(subsidy.subsidy_type, subsidy.subsidy_type) }}</span>
+                        </td>
+                        <td>
+                            <strong>
+                                {% if subsidy.subsidy_type == 'percentage_discount' %}
+                                    {{ subsidy.subsidy_value }}%
+                                {% else %}
+                                    {{ "%.2f"|format(subsidy.subsidy_value) }} د.ج
+                                {% endif %}
+                            </strong>
+                        </td>
+                        <td>
+                            <small>{{ subsidy.start_date }}</small>
+                            {% if subsidy.end_date %}
+                                <br><small>إلى {{ subsidy.end_date }}</small>
+                            {% else %}
+                                <br><small class="text-muted">(مفتوح النهاية)</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ subsidy.reason }}</td>
+                        <td>{{ subsidy.approved_by.full_name }}</td>
+                        <td>
+                            {% if subsidy.is_valid %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check"></i> نشط
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-pause"></i> غير نشط
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if subsidy.is_active %}
+                                {% if has_permission('restaurant_edit_subsidy') %}
+                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" 
+                                        data-bs-target="#deactivate-subsidy-{{ subsidy.id }}">
+                                    <i class="fas fa-ban"></i> إلغاء
+                                </button>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if not subsidies %}
+        <div class="alert alert-info m-3">
+            لا توجد سجلات دعم.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- الترقيم -->
+    {% if pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% for page_num in range(1, pages + 1) %}
+            <li class="page-item {% if page_num == current_page %}active{% endif %}">
+                <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- نافذة تأكيد الإلغاء -->
+{% for subsidy in subsidies %}
+{% if subsidy.is_active %}
+<div class="modal fade" id="deactivate-subsidy-{{ subsidy.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إلغاء الدعم</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>هل تريد فعلاً إلغاء الدعم ل <strong>{{ subsidy.user.full_name }}</strong>؟</p>
+                <p class="text-muted">سيتوقف الدعم فوراً.</p>
+            </div>
+            <form method="post" action="{{ url_for('restaurant_advanced.deactivate_subsidy', subsidy_id=subsidy.id) }}">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-danger">إلغاء الدعم</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% endblock %}

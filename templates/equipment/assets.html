@@ -1,0 +1,445 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة الأصول والتجهيزات - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    /* رأس الصفحة */
+    .page-header-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: white;
+        letter-spacing: 0.5px;
+        margin: 0;
+    }
+
+    .page-title i {
+        margin-left: 12px;
+        font-size: 32px;
+    }
+
+    /* البطاقات */
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .card:hover {
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+    }
+
+    .card-body {
+        padding: 18px 20px;
+    }
+
+    /* حقول النموذج */
+    .form-control, .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 10px 12px;
+        transition: all 0.3s ease;
+        font-size: 14px;
+        background-color: #f9fafb;
+    }
+
+    .form-control::placeholder {
+        color: #d1d5db;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        outline: none;
+        background-color: white;
+    }
+
+    /* الجدول */
+    .table-responsive {
+        overflow: hidden;
+    }
+
+    .table {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .table thead th {
+        border-bottom: none;
+        color: white;
+        font-weight: 700;
+        padding: 14px 12px;
+        font-size: 13px;
+        letter-spacing: 0.3px;
+        text-align: right;
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f9fafb;
+        box-shadow: inset 2px 0 0 #667eea;
+    }
+
+    .table td {
+        padding: 14px 12px;
+        vertical-align: middle;
+        color: #555;
+        font-size: 14px;
+    }
+
+    .table strong {
+        color: #667eea;
+        font-weight: 700;
+    }
+
+    /* الشارات */
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .badge i {
+        font-size: 11px;
+    }
+
+    .bg-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        color: white;
+    }
+
+    .bg-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+        color: white;
+    }
+
+    .bg-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+        color: white;
+    }
+
+    .bg-secondary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white;
+    }
+
+    /* الأزرار */
+    .btn {
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        color: white;
+    }
+
+    .btn-outline-primary {
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+
+    .btn-outline-primary:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-outline-warning {
+        color: #f59e0b;
+        border: 2px solid #f59e0b;
+    }
+
+    .btn-outline-warning:hover {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        border-color: #f59e0b;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-outline-danger {
+        color: #ef4444;
+        border: 2px solid #ef4444;
+    }
+
+    .btn-outline-danger:hover {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        border-color: #ef4444;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 13px;
+    }
+
+    .btn-group-sm {
+        gap: 4px;
+        display: flex;
+    }
+
+    .w-100 {
+        width: 100%;
+    }
+
+    /* التصفح */
+    .pagination {
+        gap: 5px;
+        margin-top: 30px;
+    }
+
+    .page-link {
+        border: 1px solid #d1d5db;
+        color: #667eea;
+        border-radius: 8px;
+        margin: 0 2px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        padding: 8px 12px;
+    }
+
+    .page-link:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .page-item.active .page-link {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    /* رسالة فارغة */
+    .text-center.py-4.text-muted {
+        padding: 40px 20px !important;
+        background: #f9fafb;
+        border-radius: 12px;
+    }
+
+    .text-center.py-4.text-muted i {
+        color: #d1d5db;
+    }
+
+    .opacity-50 {
+        opacity: 0.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="page-title mb-0">
+                    <i class="fas fa-cube"></i> إدارة الأصول والتجهيزات
+                </h1>
+                <a href="{{ url_for('equipment.add_asset') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> إضافة أصل جديد
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <input type="text" name="search" class="form-control" placeholder="ابحث برقم أو اسم..."
+                           value="{{ request.args.get('search', '') }}">
+                </div>
+                <div class="col-md-2">
+                    <select name="category" class="form-select">
+                        <option value="">-- الفئة --</option>
+                        <option value="computer" {% if request.args.get('category') == 'computer' %}selected{% endif %}>حاسوب</option>
+                        <option value="printer" {% if request.args.get('category') == 'printer' %}selected{% endif %}>طابعة</option>
+                        <option value="furniture" {% if request.args.get('category') == 'furniture' %}selected{% endif %}>أثاث</option>
+                        <option value="vehicle" {% if request.args.get('category') == 'vehicle' %}selected{% endif %}>مركبة</option>
+                        <option value="other" {% if request.args.get('category') == 'other' %}selected{% endif %}>أخرى</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="status" class="form-select">
+                        <option value="">-- الحالة --</option>
+                        <option value="in_service" {% if request.args.get('status') == 'in_service' %}selected{% endif %}>في الخدمة</option>
+                        <option value="defective" {% if request.args.get('status') == 'defective' %}selected{% endif %}>معطل</option>
+                        <option value="lost" {% if request.args.get('status') == 'lost' %}selected{% endif %}>مفقود</option>
+                        <option value="returned" {% if request.args.get('status') == 'returned' %}selected{% endif %}>مسترجع</option>
+                    </select>
+                </div>
+                <div class="col-md-3 text-end">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-search"></i> بحث
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Assets Table -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>الرقم التسلسلي</th>
+                        <th>الفئة</th>
+                        <th>الاسم/الوصف</th>
+                        <th>تاريخ الشراء</th>
+                        <th>القيمة الأصلية</th>
+                        <th>المسؤول الحالي</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if assets.items %}
+                        {% for asset in assets.items %}
+                        <tr>
+                            <td>
+                                <strong>{{ asset.asset_code }}</strong>
+                            </td>
+                            <td>{{ asset.item.category.name if asset.item and asset.item.category else '-' }}</td>
+                            <td>
+                                <strong>{{ asset.item.name if asset.item else '-' }}</strong><br>
+                                <small class="text-muted">{{ asset.item.description or '' if asset.item else '' }}</small>
+                            </td>
+                            <td>{{ asset.acquisition_date.strftime('%d/%m/%Y') if asset.acquisition_date else '-' }}</td>
+                            <td class="text-end">{{ asset.acquisition_price or 0 }} دج</td>
+                            <td>
+                                {% if asset.assignments and asset.assignments | length > 0 %}
+                                    {% set active_issue = asset.assignments | selectattr('actual_return_date', 'none') | list | first %}
+                                    {% if active_issue %}
+                                    <small>{{ active_issue.issued_to.full_name }}</small>
+                                    {% else %}
+                                    <small>لم يتم التعيين</small>
+                                    {% endif %}
+                                {% else %}
+                                <small>لم يتم التعيين</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if asset.status == 'in_service' %}
+                                <span class="badge bg-success">في الخدمة</span>
+                                {% elif asset.status == 'defective' %}
+                                <span class="badge bg-danger">معطل</span>
+                                {% elif asset.status == 'lost' %}
+                                <span class="badge bg-warning">مفقود</span>
+                                {% elif asset.status == 'returned' %}
+                                <span class="badge bg-secondary">مسترجع</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('equipment.view_asset', asset_id=asset.id) }}" 
+                                       class="btn btn-outline-primary" title="عرض">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('equipment.edit_asset', asset_id=asset.id) }}" 
+                                       class="btn btn-outline-warning" title="تعديل">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ url_for('equipment.delete_asset', asset_id=asset.id) }}" 
+                                       class="btn btn-outline-danger" title="حذف"
+                                       onclick="return confirm('هل أنت متأكد من حذف هذا الأصل؟')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                            لا توجد أصول مسجلة في النظام
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if assets.pages > 1 %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if assets.page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1&status={{ selected_status }}&search={{ search }}">الأولى</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ assets.page - 1 }}&status={{ selected_status }}&search={{ search }}">السابقة</a>
+            </li>
+            {% endif %}
+            
+            {% for page_num in range(1, assets.pages + 1) %}
+                {% if page_num == assets.page %}
+                <li class="page-item active">
+                    <span class="page-link">{{ page_num }}</span>
+                </li>
+                {% else %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_num }}&status={{ selected_status }}&search={{ search }}">{{ page_num }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if assets.page < assets.pages %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ assets.page + 1 }}&status={{ selected_status }}&search={{ search }}">التالية</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ assets.pages }}&status={{ selected_status }}&search={{ search }}">الأخيرة</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

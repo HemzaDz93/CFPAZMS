@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فاتورة أمر شراء - {{ order.po_number }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        .invoice-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        /* رأسية الفاتورة */
+        .invoice-header {
+            text-align: center;
+            border-bottom: 4px solid #1a3a52;
+            padding-bottom: 25px;
+            margin-bottom: 30px;
+            background: linear-gradient(180deg, #f9fafc 0%, #ffffff 100%);
+            padding-top: 20px;
+            border-radius: 4px;
+        }
+
+        .organization-name {
+            font-size: 26px;
+            font-weight: 700;
+            color: #1a3a52;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .organization-details {
+            font-size: 12px;
+            color: #555;
+            line-height: 1.9;
+            letter-spacing: 0.3px;
+        }
+
+        .invoice-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a3a52;
+            margin: 22px 0 0 0;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            padding-top: 15px;
+            border-top: 2px solid #2e5f8a;
+            margin-top: 15px;
+        }
+
+        /* معلومات الفاتورة */
+        .invoice-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 35px;
+            padding: 0;
+        }
+
+        .info-block {
+            padding: 18px;
+            background: #f8fafc;
+            border-right: 4px solid #2e5f8a;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .info-block h4 {
+            color: #1a3a52;
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #2e5f8a;
+            letter-spacing: 0.5px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 13px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #1a3a52;
+        }
+
+        .info-value {
+            text-align: left;
+            color: #374151;
+            margin-right: 10px;
+        }
+
+        /* جدول السلع */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 35px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .items-table thead {
+            background: linear-gradient(135deg, #1a3a52 0%, #2e5f8a 100%);
+            color: white;
+        }
+
+        .items-table th {
+            padding: 16px 15px;
+            text-align: right;
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            border: none;
+        }
+
+        .items-table td {
+            padding: 14px 15px;
+            border: none;
+            font-size: 13px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .items-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .items-table tbody tr:nth-child(odd) {
+            background: #fafbfc;
+        }
+
+        .items-table tbody tr:hover {
+            background: #f0f7ff;
+            transition: background-color 0.2s ease;
+        }
+
+        .number-cell {
+            text-align: center;
+            width: 50px;
+        }
+
+        .total-row {
+            background: linear-gradient(135deg, #1a3a52 0%, #2e5f8a 100%);
+            color: white;
+            font-weight: 700;
+        }
+
+        .total-row td {
+            border: none;
+            padding: 16px 15px;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        /* أماكن التوقيعات */
+        .signatures-section {
+            margin-top: 50px;
+            padding-top: 35px;
+            border-top: 3px solid #1a3a52;
+        }
+
+        .signatures-title {
+            text-align: center;
+            font-weight: 700;
+            font-size: 18px;
+            color: #1a3a52;
+            margin-bottom: 40px;
+            letter-spacing: 0.5px;
+        }
+
+        .signatures-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin-top: 45px;
+        }
+
+        .signature-box {
+            text-align: center;
+            padding: 15px;
+        }
+
+        .signature-line {
+            border-top: 2px solid #1a3a52;
+            margin-top: 60px;
+            padding-top: 15px;
+            font-weight: bold;
+            font-size: 13px;
+            color: #1a3a52;
+            min-height: 40px;
+        }
+
+        .signature-title {
+            font-size: 12px;
+            color: #1a3a52;
+            margin-top: 8px;
+            font-style: normal;
+            font-weight: 500;
+        }
+
+        /* أزرار الطباعة */
+        .print-buttons {
+            text-align: center;
+            margin-bottom: 20px;
+            gap: 15px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .print-buttons button, .print-buttons a {
+            padding: 12px 28px;
+            margin: 5px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: 0.4px;
+        }
+
+        .btn-print {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+        }
+
+        .btn-print:hover {
+            box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, #7f8c8d 0%, #6c7a7c 100%);
+            color: white;
+        }
+
+        .btn-back:hover {
+            box-shadow: 0 4px 8px rgba(127, 140, 141, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* ملاحظات */
+        .notes-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
+        }
+
+        .notes-section h5 {
+            color: #856404;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .notes-section p {
+            color: #856404;
+            font-size: 12px;
+        }
+
+        /* الرقم التسلسلي */
+        .sequential-number {
+            text-align: center;
+            font-size: 11px;
+            color: #999;
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <!-- رأسية الفاتورة -->
+        <div class="invoice-header">
+            <div class="organization-name">
+                {{ org_settings.ministry_name if org_settings else 'الوزارة' }}
+            </div>
+            <div class="organization-details">
+                <div>{{ org_settings.directorate_name if org_settings else 'المديرية' }}</div>
+                <div>{{ org_settings.institution_name if org_settings else 'المؤسسة' }}</div>
+                {% if org_settings %}
+                    {% if org_settings.address %}
+                    <div>{{ org_settings.address }}</div>
+                    {% endif %}
+                    {% if org_settings.phone %}
+                    <div>الهاتف: {{ org_settings.phone }}</div>
+                    {% endif %}
+                    {% if org_settings.email %}
+                    <div>البريد الإلكتروني: {{ org_settings.email }}</div>
+                    {% endif %}
+                {% endif %}
+            </div>
+            <div class="invoice-title">فاتورة أمر الشراء</div>
+        </div>
+
+        <!-- معلومات الفاتورة -->
+        <div class="invoice-info">
+            <div class="info-block">
+                <h4>بيانات الفاتورة</h4>
+                <div class="info-item">
+                    <span class="info-label">رقم الأمر:</span>
+                    <span class="info-value">{{ order.po_number }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">تاريخ الأمر:</span>
+                    <span class="info-value">{{ order.order_date.strftime('%Y-%m-%d') if order.order_date else '-' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">تاريخ التسليم المتوقع:</span>
+                    <span class="info-value">{{ order.expected_delivery.strftime('%Y-%m-%d') if order.expected_delivery else 'لم يتم تحديده' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">حالة الأمر:</span>
+                    <span class="info-value">
+                        {% if order.status == 'pending' %}
+                            قيد الانتظار
+                        {% elif order.status == 'confirmed' %}
+                            مؤكد
+                        {% elif order.status == 'delivered' %}
+                            مستلم
+                        {% elif order.status == 'cancelled' %}
+                            ملغى
+                        {% else %}
+                            {{ order.status }}
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="info-block">
+                <h4>بيانات المورد</h4>
+                <div class="info-item">
+                    <span class="info-label">اسم المورد:</span>
+                    <span class="info-value">{{ order.supplier.name if order.supplier else '-' }}</span>
+                </div>
+                {% if order.supplier %}
+                    {% if order.supplier.tax_id %}
+                    <div class="info-item">
+                        <span class="info-label">الرقم الجبائي:</span>
+                        <span class="info-value">{{ order.supplier.tax_id }}</span>
+                    </div>
+                    {% endif %}
+                    {% if order.supplier.registration_number %}
+                    <div class="info-item">
+                        <span class="info-label">رقم التسجيل:</span>
+                        <span class="info-value">{{ order.supplier.registration_number }}</span>
+                    </div>
+                    {% endif %}
+                    {% if order.supplier.phone %}
+                    <div class="info-item">
+                        <span class="info-label">الهاتف:</span>
+                        <span class="info-value">{{ order.supplier.phone }}</span>
+                    </div>
+                    {% endif %}
+                    {% if order.supplier.email %}
+                    <div class="info-item">
+                        <span class="info-label">البريد الإلكتروني:</span>
+                        <span class="info-value">{{ order.supplier.email }}</span>
+                    </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- جدول السلع -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%">#</th>
+                    <th style="width: 15%">كود الصنف</th>
+                    <th style="width: 35%">اسم الصنف</th>
+                    <th style="width: 12%">الكمية</th>
+                    <th style="width: 15%">سعر الوحدة</th>
+                    <th style="width: 18%">الإجمالي</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items %}
+                {% set item_total = item.quantity_ordered * item.unit_price %}
+                <tr>
+                    <td class="number-cell">{{ loop.index }}</td>
+                    <td>{{ item.item.code if item.item else '-' }}</td>
+                    <td>{{ item.item.name if item.item else '-' }}</td>
+                    <td class="number-cell">{{ "%.2f"|format(item.quantity_ordered) }} {{ item.item.unit if item.item else '' }}</td>
+                    <td class="number-cell">{{ "%.2f"|format(item.unit_price) }} د.ج</td>
+                    <td class="number-cell"><strong>{{ "%.2f"|format(item_total) }} د.ج</strong></td>
+                </tr>
+                {% endfor %}
+                <tr class="total-row">
+                    <td colspan="5" style="text-align: left; font-size: 14px;">المجموع الإجمالي:</td>
+                    <td class="number-cell" style="font-size: 16px;">{{ "%.2f"|format(order.total_amount) }} د.ج</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- الملاحظات -->
+        {% if order.notes %}
+        <div class="notes-section">
+            <h5>ملاحظات:</h5>
+            <p>{{ order.notes }}</p>
+        </div>
+        {% endif %}
+
+        <!-- أماكن التوقيعات -->
+        <div class="signatures-section">
+            <div class="signatures-title">التوقيعات والموافقات</div>
+            <div class="signatures-grid">
+                <div class="signature-box">
+                    <div class="signature-line"></div>
+                    <div class="signature-title">توقيع المورد</div>
+                </div>
+                <div class="signature-box">
+                    <div class="signature-line"></div>
+                    <div class="signature-title">أمين المخزن</div>
+                </div>
+                <div class="signature-box">
+                    <div class="signature-line"></div>
+                    <div class="signature-title">مدير المؤسسة</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الرقم التسلسلي -->
+        <div class="sequential-number">
+            طُبعت بتاريخ: {{ print_datetime }}
+        </div>
+    </div>
+
+    <!-- أزرار الطباعة والعودة -->
+    <div style="text-align: center; margin-top: 20px;" class="no-print">
+        <button class="btn-print" onclick="window.print()">
+            <i class="fas fa-print"></i> طباعة الفاتورة
+        </button>
+        <a href="{{ url_for('suppliers.edit_order', order_id=order.id) }}" class="btn-back">
+            <i class="fas fa-arrow-right"></i> العودة للأمر
+        </a>
+    </div>
+
+</body>
+</html>

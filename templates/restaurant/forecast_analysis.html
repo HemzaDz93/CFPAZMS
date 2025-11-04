@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}تحليل التوقعات والطلب{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3">
+                    <i class="fas fa-chart-bar me-2"></i>تحليل التوقعات والطلب
+                </h1>
+                <a href="{{ url_for('restaurant_advanced.forecast_list') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>العودة
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">الفلاتر</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="{{ url_for('restaurant_advanced.forecast_analysis') }}">
+                        <div class="mb-3">
+                            <label for="meal_type" class="form-label">نوع الوجبة</label>
+                            <select id="meal_type" name="meal_type" class="form-select">
+                                <option value="">الكل</option>
+                                <option value="breakfast" {% if meal_type == 'breakfast' %}selected{% endif %}>الإفطار</option>
+                                <option value="lunch" {% if meal_type == 'lunch' %}selected{% endif %}>الغداء</option>
+                                <option value="dinner" {% if meal_type == 'dinner' %}selected{% endif %}>العشاء</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="period" class="form-label">الفترة</label>
+                            <select id="period" name="period" class="form-select">
+                                <option value="daily" {% if period == 'daily' %}selected{% endif %}>يومي</option>
+                                <option value="weekly" {% if period == 'weekly' %}selected{% endif %}>أسبوعي</option>
+                                <option value="monthly" {% if period == 'monthly' %}selected{% endif %}>شهري</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter me-2"></i>تطبيق الفلاتر
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="col-md-8">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="card border-left-primary">
+                        <div class="card-body">
+                            <h6 class="text-muted">إجمالي الطلب المتوقع</h6>
+                            <h3 class="text-primary">{{ total_forecasted|round(0)|int }}</h3>
+                            <small class="text-muted">{{ forecasts|length }} توقع</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card border-left-success">
+                        <div class="card-body">
+                            <h6 class="text-muted">متوسط الطلب</h6>
+                            <h3 class="text-success">{{ average_forecast|round(0)|int }}</h3>
+                            <small class="text-muted">لكل توقع</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="card border-left-info">
+                        <div class="card-body">
+                            <h6 class="text-muted">توقعات عالية الثقة</h6>
+                            <h3 class="text-info">{{ high_confidence }}</h3>
+                            <small class="text-muted">(≥ 80%)</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card border-left-warning">
+                        <div class="card-body">
+                            <h6 class="text-muted">توقعات منخفضة الثقة</h6>
+                            <h3 class="text-warning">{{ low_confidence }}</h3>
+                            <small class="text-muted">(< 80%)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Charts -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">توزيع الطلب حسب نوع الوجبة</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="mealTypeChart" height="60"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">مستويات الثقة</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="confidenceChart" height="60"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forecasts Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-table me-2"></i>التوقعات التفصيلية
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if forecasts %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>التاريخ</th>
+                                    <th>نوع الوجبة</th>
+                                    <th>الأجزاء المتوقعة</th>
+                                    <th>مستوى الثقة</th>
+                                    <th>طريقة التوقع</th>
+                                    <th>حدث خاص</th>
+                                    <th>عطلة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for forecast in forecasts %}
+                                <tr>
+                                    <td>{{ forecast.forecast_date.strftime('%d/%m/%Y') if forecast.forecast_date else '-' }}</td>
+                                    <td>
+                                        {% if forecast.meal_type == 'breakfast' %}
+                                            <span class="badge bg-warning">إفطار</span>
+                                        {% elif forecast.meal_type == 'lunch' %}
+                                            <span class="badge bg-danger">غداء</span>
+                                        {% elif forecast.meal_type == 'dinner' %}
+                                            <span class="badge bg-info">عشاء</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ forecast.meal_type }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">{{ forecast.forecasted_portions }}</td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar {% if forecast.confidence_level >= 0.8 %}bg-success{% elif forecast.confidence_level >= 0.6 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                 style="width: {{ (forecast.confidence_level * 100)|round(0) }}%">
+                                                {{ (forecast.confidence_level * 100)|round(0) }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if forecast.forecasting_method == 'statistical' %}
+                                            <span class="badge bg-primary">إحصائي</span>
+                                        {% elif forecast.forecasting_method == 'manual' %}
+                                            <span class="badge bg-secondary">يدوي</span>
+                                        {% else %}
+                                            <span class="badge bg-info">{{ forecast.forecasting_method }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if forecast.special_event %}
+                                            <i class="fas fa-star text-warning"></i> {{ forecast.event_description or 'حدث' }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if forecast.is_holiday %}
+                                            <i class="fas fa-calendar-times text-danger"></i>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>لا توجد توقعات متاحة
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const forecasts = {{ forecasts|tojson }};
+    
+    // Meal Type Distribution
+    const mealTypeCtx = document.getElementById('mealTypeChart').getContext('2d');
+    const mealTypeData = {};
+    forecasts.forEach(f => {
+        const type = f.meal_type === 'breakfast' ? 'الإفطار' : 
+                     f.meal_type === 'lunch' ? 'الغداء' : 
+                     f.meal_type === 'dinner' ? 'العشاء' : f.meal_type;
+        mealTypeData[type] = (mealTypeData[type] || 0) + f.forecasted_portions;
+    });
+    
+    new Chart(mealTypeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(mealTypeData),
+            datasets: [{
+                data: Object.values(mealTypeData),
+                backgroundColor: ['#ffc107', '#dc3545', '#17a2b8'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    
+    // Confidence Distribution
+    const confidenceCtx = document.getElementById('confidenceChart').getContext('2d');
+    const highConfidence = forecasts.filter(f => f.confidence_level >= 0.8).length;
+    const mediumConfidence = forecasts.filter(f => f.confidence_level >= 0.6 && f.confidence_level < 0.8).length;
+    const lowConfidence = forecasts.filter(f => f.confidence_level < 0.6).length;
+    
+    new Chart(confidenceCtx, {
+        type: 'bar',
+        data: {
+            labels: ['عالية (≥80%)', 'متوسطة (60-79%)', 'منخفضة (<60%)'],
+            datasets: [{
+                label: 'عدد التوقعات',
+                data: [highConfidence, mediumConfidence, lowConfidence],
+                backgroundColor: ['#27ae60', '#f39c12', '#e74c3c'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

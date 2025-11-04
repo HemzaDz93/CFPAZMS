@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة الأصناف - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    /* رأس الصفحة */
+    .page-header-wrapper {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: white;
+        letter-spacing: 0.5px;
+        margin: 0;
+    }
+
+    .page-title i {
+        margin-left: 12px;
+        font-size: 32px;
+    }
+
+    /* البطاقات */
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .card:hover {
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+    }
+
+    .card-body {
+        padding: 18px 20px;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        border: none;
+        padding: 1rem 1.25rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+
+    .card-footer {
+        background: #f9fafb;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    /* حقول النموذج */
+    .form-control, .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 10px 12px;
+        transition: all 0.3s ease;
+        font-size: 14px;
+        background-color: #f9fafb;
+    }
+
+    .form-control::placeholder {
+        color: #d1d5db;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        outline: none;
+        background-color: white;
+    }
+
+    /* الجدول */
+    .table-responsive {
+        overflow: hidden;
+    }
+
+    .table {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .table thead th {
+        border-bottom: none;
+        color: white;
+        font-weight: 700;
+        padding: 14px 12px;
+        font-size: 13px;
+        letter-spacing: 0.3px;
+        text-align: right;
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f9fafb;
+        box-shadow: inset 2px 0 0 #667eea;
+    }
+
+    .table td {
+        padding: 14px 12px;
+        vertical-align: middle;
+        color: #555;
+        font-size: 14px;
+    }
+
+    .table strong {
+        color: #667eea;
+        font-weight: 700;
+    }
+
+    /* الشارات */
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: white;
+    }
+
+    .badge i {
+        font-size: 11px;
+    }
+
+    .bg-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    }
+
+    .bg-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    }
+
+    .bg-info {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+    }
+
+    /* الأزرار */
+    .btn {
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        color: white;
+    }
+
+    .btn-outline-primary {
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+
+    .btn-outline-primary:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 13px;
+    }
+
+    .w-100 {
+        width: 100%;
+    }
+
+    /* التصفح */
+    .pagination {
+        gap: 5px;
+        margin-bottom: 0;
+    }
+
+    .page-link {
+        border: 1px solid #d1d5db;
+        color: #667eea;
+        border-radius: 8px;
+        margin: 0 2px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        padding: 8px 12px;
+    }
+
+    .page-link:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .page-item.active .page-link {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .page-item.disabled .page-link {
+        color: #d1d5db;
+        cursor: not-allowed;
+    }
+
+    /* رسالة فارغة */
+    .text-center.py-4 {
+        padding: 40px 20px !important;
+        background: #f9fafb;
+        border-radius: 12px;
+    }
+
+    .text-muted {
+        color: #9ca3af;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="page-title mb-0">
+                    <i class="fas fa-boxes"></i> إدارة الأصناف
+                </h1>
+                <a href="{{ url_for('inventory.add_item') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> إضافة صنف جديد
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- البحث والتصفية -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-6">
+                    <input type="text" class="form-control" name="search" placeholder="ابحث عن الكود أو الاسم..." 
+                           value="{{ search or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select" name="category_id">
+                        <option value="">اختر التصنيف</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if selected_category == category.id %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-search"></i> بحث
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- قائمة الأصناف -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-list"></i> الأصناف ({{ items.total }})
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>الكود</th>
+                        <th>الاسم</th>
+                        <th>التصنيف</th>
+                        <th>الوحدة</th>
+                        <th>الكمية في المخزون</th>
+                        <th>الحد الأدنى</th>
+                        <th>السعر</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if items.items %}
+                        {% for item in items.items %}
+                        <tr>
+                            <td><span class="badge bg-info">{{ item.code }}</span></td>
+                            <td><strong>{{ item.name }}</strong></td>
+                            <td>{{ item.category.name if item.category else '-' }}</td>
+                            <td>{{ item.unit }}</td>
+                            <td>
+                                <strong>{{ item.quantity_in_stock }}</strong>
+                            </td>
+                            <td>{{ item.minimum_quantity }}</td>
+                            <td>{{ item.unit_price or '-' }} دج</td>
+                            <td>
+                                {% if item.quantity_in_stock <= item.minimum_quantity %}
+                                    <span class="badge bg-danger"><i class="fas fa-exclamation"></i> منخفض</span>
+                                {% else %}
+                                    <span class="badge bg-success"><i class="fas fa-check"></i> كافي</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('inventory.edit_item', item_id=item.id) }}" class="btn btn-sm btn-outline-primary" title="تعديل">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center py-4">
+                            <p class="text-muted">لا توجد أصناف</p>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- الصفحات -->
+        {% if items.pages > 1 %}
+        <div class="card-footer">
+            <nav aria-label="Page navigation">
+                <ul class="pagination mb-0">
+                    {% if items.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('inventory.items', page=items.prev_num, search=search, category_id=selected_category) }}">السابق</a>
+                    </li>
+                    {% endif %}
+
+                    {% for page_num in items.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num == items.page %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('inventory.items', page=page_num, search=search, category_id=selected_category) }}">{{ page_num }}</a>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if items.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('inventory.items', page=items.next_num, search=search, category_id=selected_category) }}">التالي</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

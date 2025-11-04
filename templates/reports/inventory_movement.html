@@ -1,0 +1,469 @@
+{% extends "base.html" %}
+
+{% block title %}تقرير حركات المخزون - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    /* رأس الصفحة */
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: white;
+        letter-spacing: 0.5px;
+    }
+
+    .page-title i {
+        margin-left: 12px;
+        font-size: 32px;
+    }
+
+    /* البطاقات */
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .card:hover {
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+    }
+
+    .card-body {
+        padding: 18px 20px;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        border: none;
+        padding: 1rem 1.25rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+
+    .card-title {
+        margin: 0;
+        color: #667eea;
+    }
+
+    /* حقول النموذج */
+    .form-control, .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 10px 12px;
+        transition: all 0.3s ease;
+        font-size: 14px;
+        background-color: #f9fafb;
+    }
+
+    .form-control::placeholder {
+        color: #d1d5db;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        outline: none;
+        background-color: white;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    /* الجدول */
+    .table-responsive {
+        overflow: hidden;
+    }
+
+    .table {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .table thead th {
+        border-bottom: none;
+        color: white;
+        font-weight: 700;
+        padding: 14px 12px;
+        font-size: 13px;
+        letter-spacing: 0.3px;
+        text-align: right;
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f9fafb;
+        box-shadow: inset 2px 0 0 #667eea;
+    }
+
+    .table td {
+        padding: 14px 12px;
+        vertical-align: middle;
+        color: #555;
+        font-size: 14px;
+    }
+
+    .table strong {
+        color: #667eea;
+        font-weight: 700;
+    }
+
+    /* الشارات */
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: white;
+    }
+
+    .badge i {
+        font-size: 11px;
+    }
+
+    .bg-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    }
+
+    .bg-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    }
+
+    .bg-info {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+    }
+
+    .bg-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+
+    /* الأزرار */
+    .btn {
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        color: white;
+    }
+
+    .btn-outline-success {
+        color: #10b981;
+        border: 2px solid #10b981;
+    }
+
+    .btn-outline-success:hover {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border-color: #10b981;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .w-100 {
+        width: 100%;
+    }
+
+    /* ألوان النصوص */
+    .text-success {
+        color: #10b981;
+    }
+
+    .text-danger {
+        color: #ef4444;
+    }
+
+    .text-info {
+        color: #06b6d4;
+    }
+
+    .text-primary {
+        color: #667eea;
+    }
+
+    .text-muted {
+        color: #9ca3af;
+    }
+
+    /* رسالة فارغة */
+    .text-center.py-4 {
+        padding: 40px 20px !important;
+        background: #f9fafb;
+        border-radius: 12px;
+    }
+
+    /* Summary Cards */
+    .summary-card {
+        border-top: 4px solid;
+        position: relative;
+    }
+
+    .summary-card h3 {
+        font-weight: 700;
+        margin: 1rem 0 0.5rem;
+    }
+
+    .summary-card.success-card h3 {
+        color: #10b981;
+    }
+
+    .summary-card.danger-card h3 {
+        color: #ef4444;
+    }
+
+    .summary-card.info-card h3 {
+        color: #06b6d4;
+    }
+
+    .summary-card.primary-card h3 {
+        color: #667eea;
+    }
+
+    .summary-card.success-card {
+        border-top-color: #10b981;
+    }
+
+    .summary-card.danger-card {
+        border-top-color: #ef4444;
+    }
+
+    .summary-card.info-card {
+        border-top-color: #06b6d4;
+    }
+
+    .summary-card.primary-card {
+        border-top-color: #667eea;
+    }
+
+    /* Print Styles */
+    @media print {
+        .page-title {
+            font-size: 14pt !important;
+            margin-bottom: 0.3cm !important;
+        }
+
+        /* تقليل حجم بطاقات الملخص */
+        .summary-card {
+            border-top: 1px solid #999 !important;
+            margin-bottom: 0.2cm !important;
+            padding: 0.2cm !important;
+        }
+
+        .summary-card h3 {
+            font-size: 10pt !important;
+            margin: 0.1cm 0 !important;
+        }
+
+        .summary-card h6 {
+            font-size: 8pt !important;
+        }
+
+        .row.mb-4 {
+            margin-bottom: 0.3cm !important;
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 0.2cm !important;
+        }
+
+        .col-md-3 {
+            flex: 0 0 calc(25% - 0.15cm) !important;
+            padding: 0 !important;
+        }
+
+        /* إخفاء العمود الأخير (الإجراءات) من الجداول */
+        .table tbody td:last-child,
+        .table thead th:last-child {
+            display: none !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="page-title">
+                <i class="fas fa-chart-bar"></i> تقرير حركات المخزون
+            </h1>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">معايير البحث</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-2">
+                    <label class="form-label">من التاريخ</label>
+                    <input type="date" name="from_date" class="form-control" 
+                           value="{{ request.args.get('from_date', '') }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">إلى التاريخ</label>
+                    <input type="date" name="to_date" class="form-control" 
+                           value="{{ request.args.get('to_date', '') }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">نوع الحركة</label>
+                    <select name="transaction_type" class="form-select">
+                        <option value="">-- الكل --</option>
+                        <option value="purchase" {% if request.args.get('transaction_type') == 'purchase' %}selected{% endif %}>ورود</option>
+                        <option value="issue" {% if request.args.get('transaction_type') == 'issue' %}selected{% endif %}>صرف</option>
+                        <option value="transfer" {% if request.args.get('transaction_type') == 'transfer' %}selected{% endif %}>تحويل</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">الفئة</label>
+                    <select name="category" class="form-select">
+                        <option value="">-- الكل --</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if request.args.get('category') == category.id|string %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 pt-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> بحث
+                    </button>
+                </div>
+                <div class="col-md-2 pt-2">
+                    <a href="#" class="btn btn-outline-success w-100" onclick="window.print();">
+                        <i class="fas fa-print"></i> طباعة
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card summary-card success-card">
+                <div class="card-body text-center">
+                    <h6 class="card-title"><i class="fas fa-arrow-down"></i> إجمالي الورود</h6>
+                    <h3>{{ purchase_total }}</h3>
+                    <small class="text-muted">{{ purchase_count }} عملية</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card summary-card danger-card">
+                <div class="card-body text-center">
+                    <h6 class="card-title"><i class="fas fa-arrow-up"></i> إجمالي الصرف</h6>
+                    <h3>{{ issue_total }}</h3>
+                    <small class="text-muted">{{ issue_count }} عملية</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card summary-card info-card">
+                <div class="card-body text-center">
+                    <h6 class="card-title"><i class="fas fa-exchange-alt"></i> التحويلات</h6>
+                    <h3>{{ transfer_total }}</h3>
+                    <small class="text-muted">{{ transfer_count }} عملية</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card summary-card primary-card">
+                <div class="card-body text-center">
+                    <h6 class="card-title"><i class="fas fa-scale-balanced"></i> الرصيد الصافي</h6>
+                    <h3>{{ net_balance }}</h3>
+                    <small class="text-muted">الفرق</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">تفاصيل الحركات</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>الصنف</th>
+                        <th>الفئة</th>
+                        <th>النوع</th>
+                        <th>الكمية</th>
+                        <th>الوحدة</th>
+                        <th>المرجع</th>
+                        <th>المسجل بواسطة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if transactions %}
+                        {% for transaction in transactions %}
+                        <tr>
+                            <td>{{ transaction.transaction_date.strftime('%d/%m/%Y') }}</td>
+                            <td>{{ transaction.item.name }}</td>
+                            <td>{{ transaction.item.category.name }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if transaction.transaction_type == 'purchase' %}bg-success
+                                    {% elif transaction.transaction_type == 'issue' %}bg-danger
+                                    {% elif transaction.transaction_type == 'transfer' %}bg-info
+                                    {% endif %}">
+                                    {% if transaction.transaction_type == 'purchase' %}ورود
+                                    {% elif transaction.transaction_type == 'issue' %}صرف
+                                    {% elif transaction.transaction_type == 'transfer' %}تحويل
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td class="text-end">{{ transaction.quantity }}</td>
+                            <td>{{ transaction.item.unit }}</td>
+                            <td><small>{{ transaction.reference_number or '-' }}</small></td>
+                            <td><small>{{ transaction.created_by_user.full_name if transaction.created_by_user else '-' }}</small></td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            لا توجد بيانات
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style media="print">
+    .card-header, form, .btn { display: none !important; }
+</style>
+{% endblock %}

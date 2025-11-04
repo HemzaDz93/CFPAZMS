@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+
+{% block title %}سجل النشاطات - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    /* ============================================
+       MODERN GRADIENT DESIGN SYSTEM
+       ============================================ */
+    
+    /* Page Header Styling */
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: none;
+        letter-spacing: 0.5px;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Card Styling */
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        background: #ffffff;
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px 12px 0 0;
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: 0.3px;
+        padding: 1.25rem;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .card-footer {
+        background: #f9fafb;
+        border-top: 1px solid #e5e7eb;
+        border-radius: 0 0 12px 12px;
+        padding: 1.25rem;
+    }
+
+    /* Form Controls */
+    .form-control,
+    .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        background-color: #f9fafb;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #667eea;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+
+    .form-control::placeholder {
+        color: #9ca3af;
+    }
+
+    /* Search Button */
+    .btn-outline-primary {
+        border: 2px solid #667eea;
+        color: #667eea;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        padding: 0.75rem 1.5rem;
+    }
+
+    .btn-outline-primary:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: transparent;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    /* Small Buttons */
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        border-radius: 8px;
+    }
+
+    /* Table Styling */
+    .table-responsive {
+        border-radius: 0 0 12px 12px;
+    }
+
+    table.table {
+        margin-bottom: 0;
+    }
+
+    table.table thead tr {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+
+    table.table thead th {
+        color: white;
+        font-weight: 700;
+        border: none;
+        padding: 1.25rem;
+        text-align: right;
+        letter-spacing: 0.3px;
+        font-size: 1rem;
+        background: transparent;
+    }
+
+    table.table tbody tr {
+        border-bottom: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+
+    table.table tbody tr:hover {
+        background-color: #f9fafb;
+        box-shadow: inset 4px 0 0 #667eea;
+    }
+
+    table.table tbody td {
+        padding: 1.25rem;
+        vertical-align: middle;
+        text-align: right;
+        color: #374151;
+        font-weight: 500;
+    }
+
+    table.table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    /* Badge Styling */
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        letter-spacing: 0.2px;
+        display: inline-block;
+    }
+
+    .bg-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    .bg-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+
+    .bg-info {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        color: white;
+    }
+
+    .bg-secondary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .bg-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+
+    /* Pagination Styling */
+    .pagination {
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .page-item .page-link {
+        border: 2px solid #e5e7eb;
+        color: #667eea;
+        background-color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 0.5rem 0.75rem;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .page-item .page-link:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: transparent;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .page-item.active .page-link {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: transparent;
+        color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .page-item.disabled .page-link {
+        color: #9ca3af;
+        background-color: #f3f4f6;
+        border-color: #e5e7eb;
+        cursor: not-allowed;
+    }
+
+    /* Text Utilities */
+    .text-muted {
+        color: #9ca3af !important;
+        font-weight: 500;
+    }
+
+    /* Empty State */
+    .text-center p {
+        font-size: 1.1rem;
+        letter-spacing: 0.3px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 2rem;
+        }
+
+        table.table thead th {
+            padding: 1rem 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        table.table tbody td {
+            padding: 0.75rem;
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="page-title">
+                <i class="fas fa-history"></i> سجل النشاطات
+            </h1>
+        </div>
+    </div>
+
+    <!-- البحث والتصفية -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-8">
+                    <input type="text" class="form-control" name="user_id" placeholder="ابحث عن المستخدم..." 
+                           value="{{ user_id or '' }}">
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="entity_type">
+                        <option value="">اختر نوع العملية</option>
+                        <option value="User" {% if entity_type == 'User' %}selected{% endif %}>مستخدم</option>
+                        <option value="Item" {% if entity_type == 'Item' %}selected{% endif %}>صنف</option>
+                        <option value="PurchaseOrder" {% if entity_type == 'PurchaseOrder' %}selected{% endif %}>أمر شراء</option>
+                        <option value="OrganizationSettings" {% if entity_type == 'OrganizationSettings' %}selected{% endif %}>إعدادات المؤسسة</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-search"></i> بحث
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- سجل النشاطات -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-list"></i> آخر النشاطات ({{ logs.total }})
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>التاريخ والوقت</th>
+                        <th>المستخدم</th>
+                        <th>الإجراء</th>
+                        <th>نوع الكائن</th>
+                        <th>التفاصيل</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if logs.items %}
+                        {% for log in logs.items %}
+                        <tr>
+                            <td>
+                                <small>{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                            </td>
+                            <td>
+                                <strong>{{ log.user.full_name if log.user else 'غير معروف' }}</strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ log.action }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ log.entity_type }}</span>
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    {% if log.old_value %}
+                                        من: {{ log.old_value }}<br>
+                                    {% endif %}
+                                    {% if log.new_value %}
+                                        إلى: {{ log.new_value }}
+                                    {% endif %}
+                                    {% if not log.old_value and not log.new_value %}
+                                        (بدون تفاصيل)
+                                    {% endif %}
+                                </small>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            <p class="text-muted">لا توجد نشاطات</p>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- الصفحات -->
+        {% if logs.pages > 1 %}
+        <div class="card-footer">
+            <nav aria-label="Page navigation">
+                <ul class="pagination mb-0">
+                    {% if logs.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.activity_logs', page=logs.prev_num, user_id=user_id, entity_type=entity_type) }}">السابق</a>
+                    </li>
+                    {% endif %}
+
+                    {% for page_num in logs.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num == logs.page %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.activity_logs', page=page_num, user_id=user_id, entity_type=entity_type) }}">{{ page_num }}</a>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if logs.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.activity_logs', page=logs.next_num, user_id=user_id, entity_type=entity_type) }}">التالي</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,186 @@
+/**
+ * الوضع المظلم للتطبيق
+ */
+
+[data-theme="dark"] {
+  /* الألوان الأساسية */
+  --primary-bg: #1a1a1a;
+  --secondary-bg: #2d2d2d;
+  --primary-text: #ffffff;
+  --secondary-text: #e0e0e0;
+  --accent-color: #4caf50;
+  --accent-hover: #45a049;
+  --border-color: #404040;
+  --card-bg: #333333;
+  
+  /* عناصر الواجهة */
+  --input-bg: #242424;
+  --input-text: #ffffff;
+  --input-border: #404040;
+  --input-focus: #4caf50;
+  
+  /* العناصر التفاعلية */
+  --button-bg: #4caf50;
+  --button-text: #ffffff;
+  --button-hover: #45a049;
+  --button-active: #3d8b40;
+  
+  /* التنقل */
+  --nav-bg: #2d2d2d;
+  --nav-text: #ffffff;
+  --nav-hover: #404040;
+  --nav-active: #4caf50;
+  
+  /* الجداول */
+  --table-header-bg: #333333;
+  --table-row-bg: #2d2d2d;
+  --table-row-alt-bg: #262626;
+  --table-border: #404040;
+  
+  /* البطاقات والحاويات */
+  --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --container-bg: #2d2d2d;
+  
+  /* الرسائل والتنبيهات */
+  --success-bg: #1b5e20;
+  --success-text: #ffffff;
+  --warning-bg: #f57f17;
+  --warning-text: #ffffff;
+  --error-bg: #b71c1c;
+  --error-text: #ffffff;
+  --info-bg: #0d47a1;
+  --info-text: #ffffff;
+}
+
+/* تخصيص العناصر في الوضع المظلم */
+
+[data-theme="dark"] body {
+  background-color: var(--primary-bg);
+  color: var(--primary-text);
+}
+
+[data-theme="dark"] .navbar {
+  background-color: var(--nav-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background-color: var(--input-bg);
+  color: var(--input-text);
+  border: 1px solid var(--input-border);
+}
+
+[data-theme="dark"] input:focus,
+[data-theme="dark"] select:focus,
+[data-theme="dark"] textarea:focus {
+  border-color: var(--input-focus);
+}
+
+[data-theme="dark"] .btn-primary {
+  background-color: var(--button-bg);
+  color: var(--button-text);
+}
+
+[data-theme="dark"] .btn-primary:hover {
+  background-color: var(--button-hover);
+}
+
+[data-theme="dark"] .btn-primary:active {
+  background-color: var(--button-active);
+}
+
+[data-theme="dark"] table {
+  border-color: var(--table-border);
+}
+
+[data-theme="dark"] th {
+  background-color: var(--table-header-bg);
+}
+
+[data-theme="dark"] tr:nth-child(even) {
+  background-color: var(--table-row-alt-bg);
+}
+
+[data-theme="dark"] tr:nth-child(odd) {
+  background-color: var(--table-row-bg);
+}
+
+/* المؤشرات وعناصر الحالة */
+
+[data-theme="dark"] .offline-indicator {
+  background-color: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+[data-theme="dark"] .toast {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--primary-text);
+}
+
+[data-theme="dark"] .toast-success {
+  background-color: var(--success-bg);
+  color: var(--success-text);
+}
+
+[data-theme="dark"] .toast-error {
+  background-color: var(--error-bg);
+  color: var(--error-text);
+}
+
+/* تحسينات إضافية للواجهة */
+
+[data-theme="dark"] .modal {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .modal-header {
+  border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .modal-footer {
+  border-top: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .badge {
+  background-color: var(--secondary-bg);
+  color: var(--secondary-text);
+}
+
+[data-theme="dark"] .list-group-item {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .nav-tabs {
+  border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .nav-tabs .nav-link.active {
+  background-color: var(--nav-active);
+  color: var(--nav-text);
+  border-color: var(--border-color);
+}
+
+/* تحسينات الأداء والانتقالات */
+
+[data-theme="dark"] * {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* دعم أجهزة القراءة الشاشية وإمكانية الوصول */
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="dark"] * {
+    transition: none !important;
+  }
+}

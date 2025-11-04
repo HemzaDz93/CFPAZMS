@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}إضافة أمر شراء جديد - نظام الإدارة{% endblock %}
+
+{% block styles %}
+<style>
+    /* رأس الصفحة */
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1a3a52;
+        letter-spacing: 0.5px;
+        margin-bottom: 0;
+    }
+
+    .page-title i {
+        margin-left: 12px;
+        color: #2e5f8a;
+    }
+
+    /* البطاقة */
+    .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .card:hover {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #1a3a52 0%, #2e5f8a 100%);
+        color: white;
+        border: none;
+        padding: 18px 20px;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 0.3px;
+    }
+
+    .card-header i {
+        margin-left: 10px;
+    }
+
+    .card-body {
+        padding: 32px;
+    }
+
+    /* حقول النموذج */
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .form-control, .form-select {
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        padding: 12px 14px;
+        transition: all 0.3s ease;
+        font-size: 14px;
+    }
+
+    .form-control::placeholder {
+        color: #9ca3af;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #2e5f8a;
+        box-shadow: 0 0 0 3px rgba(46, 95, 138, 0.1);
+        outline: none;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        font-family: inherit;
+    }
+
+    /* رسائل الخطأ */
+    .invalid-feedback {
+        color: #e74c3c;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 4px;
+        display: block;
+    }
+
+    .text-danger {
+        color: #e74c3c;
+        font-weight: 700;
+    }
+
+    /* رسائل التنبيه */
+    .alert {
+        border-radius: 8px;
+        border: none;
+        padding: 16px 20px;
+        font-size: 14px;
+        background: #e3f2fd;
+        color: #1565c0;
+        border-left: 4px solid #1565c0;
+        margin: 24px 0;
+    }
+
+    .alert i {
+        margin-left: 8px;
+        font-weight: 700;
+    }
+
+    .alert strong {
+        font-weight: 700;
+    }
+
+    /* مجموعة الأزرار */
+    .d-flex.gap-2 {
+        gap: 12px;
+        display: flex;
+        margin-top: 32px;
+    }
+
+    /* الأزرار */
+    .btn {
+        border-radius: 6px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        padding: 12px 24px;
+        font-size: 14px;
+        border: none;
+        letter-spacing: 0.3px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #2e5f8a 0%, #1a3a52 100%);
+        color: white;
+        box-shadow: 0 2px 6px rgba(46, 95, 138, 0.3);
+    }
+
+    .btn-primary:hover {
+        box-shadow: 0 4px 12px rgba(46, 95, 138, 0.4);
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .btn-outline-secondary {
+        border: 1.5px solid #95a5a6;
+        color: #95a5a6;
+        background: white;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #95a5a6;
+        color: white;
+        border-color: #95a5a6;
+        transform: translateY(-2px);
+    }
+
+    /* Responsive */
+    @media (max-width: 576px) {
+        .card-body {
+            padding: 20px;
+        }
+
+        .btn {
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        .d-flex.gap-2 {
+            flex-direction: column;
+            margin-top: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="page-title">
+                <i class="fas fa-plus-circle"></i> إضافة أمر شراء جديد
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-file"></i> بيانات أمر الشراء
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation">
+                        <div class="mb-3">
+                            <label for="supplier_id" class="form-label">المورد <span class="text-danger">*</span></label>
+                            <select class="form-select" id="supplier_id" name="supplier_id" required>
+                                <option value="">-- اختر مورد --</option>
+                                {% for supplier in suppliers %}
+                                <option value="{{ supplier.id }}">{{ supplier.code }} - {{ supplier.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">يجب اختيار موردًا</div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="expected_delivery" class="form-label">تاريخ التسليم المتوقع</label>
+                                <input type="date" class="form-control" id="expected_delivery" name="expected_delivery">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">ملاحظات</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                      placeholder="أي ملاحظات إضافية حول أمر الشراء..."></textarea>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>ملاحظة:</strong> بعد إنشاء أمر الشراء، يمكنك تعديله لإضافة بنود الشراء.
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> إنشاء أمر الشراء
+                            </button>
+                            <a href="{{ url_for('suppliers.orders') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Enable Bootstrap form validation
+    (function() {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}تسجيل وجبات الموظفين{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="page-title">🍽️ تسجيل وجبات الموظفين اليومي</h2>
+            <p class="text-muted">تسجيل استهلاك الموظفين للوجبات - السعر الموحد: <span id="page_meal_cost">{{ org_settings.meal_cost_per_unit or 2.5 }}</span> دج لكل وجبة</p>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'danger' else 'warning' if category == 'warning' else 'info' if category == 'info' else 'success' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <!-- نموذج التسجيل -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">📝 نموذج التسجيل</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('employee_meals.daily_registration') }}">
+                        <div class="mb-3">
+                            <label for="user_id" class="form-label">الموظف <span class="text-danger">*</span></label>
+                            <select class="form-select" id="user_id" name="user_id" required>
+                                <option value="">-- اختر الموظف --</option>
+                                {% for emp in employees %}
+                                    <option value="{{ emp.id }}">{{ emp.full_name }} ({{ emp.position or emp.role }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="meal_count" class="form-label">عدد الوجبات <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="meal_count" name="meal_count" min="1" max="10" value="1" required>
+                            <small class="form-text text-muted">السعر: <span id="meal_price">{{ org_settings.meal_cost_per_unit or 2.5 }}</span> دج × <span id="meal_qty">1</span> = <span id="total_price">{{ org_settings.meal_cost_per_unit or 2.5 }}</span> دج</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="transaction_date" class="form-label">التاريخ <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="transaction_date" name="transaction_date" value="{{ today }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">ملاحظات (اختياري)</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="2" placeholder="مثال: وجبة مسائية، وجبة خاصة..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-check-circle"></i> تسجيل الوجبات
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ملخص اليوم -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">📊 ملخص اليوم</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded text-center">
+                                <h6 class="text-muted">إجمالي الوجبات</h6>
+                                <h3 class="text-primary" id="today_meals">0</h3>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded text-center">
+                                <h6 class="text-muted">التكلفة الإجمالية</h6>
+                                <h3 class="text-success" id="today_cost">0.00</h3>
+                                <small class="text-muted">دج</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6>💡 معلومات:</h6>
+                    <ul class="small">
+                        <li>سعر الوجبة الواحدة: <strong id="info_meal_cost">{{ org_settings.meal_cost_per_unit or 2.5 }}</strong> دج</li>
+                        <li>الحد الأقصى للتنبيه: <strong id="info_alert_threshold">{{ org_settings.meal_alert_threshold or 500 }}</strong> دج شهرياً</li>
+                        <li>التسوية الشهرية تلقائية من الراتب</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- إحالات سريعة -->
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <a href="{{ url_for('employee_meals.meals_list') }}" class="btn btn-outline-primary w-100">
+                <i class="bi bi-list-ul"></i> عرض السجل الكامل
+            </a>
+        </div>
+        <div class="col-md-4 mb-3">
+            <a href="{{ url_for('employee_meals.alerts_list') }}" class="btn btn-outline-warning w-100">
+                <i class="bi bi-exclamation-triangle"></i> التنبيهات
+            </a>
+        </div>
+        <div class="col-md-4 mb-3">
+            <a href="{{ url_for('restaurant.meals') }}" class="btn btn-outline-secondary w-100">
+                <i class="bi bi-arrow-left"></i> رجوع للمطعم
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // دالة لحساب السعر الإجمالي
+    function calculateTotal() {
+        const mealPriceElement = document.getElementById('meal_price');
+        const mealCost = parseFloat(mealPriceElement.textContent) || 2.5;
+        const count = parseInt(document.getElementById('meal_count').value) || 1;
+        const total = (count * mealCost).toFixed(2);
+        
+        document.getElementById('meal_qty').textContent = count;
+        document.getElementById('total_price').textContent = total;
+    }
+    
+    // إضافة مستمع الحدث للتغيير
+    document.getElementById('meal_count').addEventListener('change', calculateTotal);
+    document.getElementById('meal_count').addEventListener('input', calculateTotal);
+    
+    // تحديث السعر عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', function() {
+        calculateTotal();
+    });
+</script>
+{% endblock %}
