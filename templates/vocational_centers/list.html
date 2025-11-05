@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+
+{% block title %}قائمة المؤسسات - نظام إدارة المؤسسات الشاملة{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center gap-3">
+                <i class="fas fa-building" style="font-size: 2rem; color: var(--primary);"></i>
+                <div>
+                    <h1 class="h3 mb-0" style="color: var(--dark-text);">إدارة المؤسسات</h1>
+                    <small class="text-muted">إدارة مراكز التكوين المهني</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('vocational_centers.add_center') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> إضافة مؤسسة جديدة
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">إجمالي المؤسسات</small>
+                            <h3 class="h5 mb-0" style="color: var(--primary);">{{ centers.total }}</h3>
+                        </div>
+                        <i class="fas fa-building" style="font-size: 2rem; color: var(--primary); opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Centers Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom" style="border-color: var(--primary) !important;">
+            <h5 class="mb-0" style="color: var(--dark-text);">
+                <i class="fas fa-list"></i> قائمة المؤسسات
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if centers.items %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>اسم المؤسسة</th>
+                                <th>الرمز</th>
+                                <th>المدير</th>
+                                <th>الهاتف</th>
+                                <th>البريد الإلكتروني</th>
+                                <th>الموظفون</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for center in centers.items %}
+                            <tr>
+                                <td>
+                                    <strong>{{ center.name }}</strong>
+                                    {% if center.name_en %}
+                                        <br><small class="text-muted">{{ center.name_en }}</small>
+                                    {% endif %}
+                                </td>
+                                <td><span class="badge bg-info">{{ center.code }}</span></td>
+                                <td>{{ center.director_name or 'غير محدد' }}</td>
+                                <td>{{ center.phone or '-' }}</td>
+                                <td>{{ center.email or '-' }}</td>
+                                <td>
+                                    <span class="badge bg-primary">
+                                        {{ center.employees|length }} موظف
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('vocational_centers.view_center', center_id=center.id) }}" 
+                                           class="btn btn-sm btn-outline-primary" title="عرض">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('vocational_centers.edit_center', center_id=center.id) }}" 
+                                           class="btn btn-sm btn-outline-secondary" title="تعديل">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ url_for('vocational_centers.manage_employees', center_id=center.id) }}" 
+                                           class="btn btn-sm btn-outline-info" title="الموظفون">
+                                            <i class="fas fa-users"></i>
+                                        </a>
+                                        <a href="{{ url_for('vocational_centers.center_statistics', center_id=center.id) }}" 
+                                           class="btn btn-sm btn-outline-warning" title="إحصائيات">
+                                            <i class="fas fa-chart-bar"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                onclick="deleteCenter('{{ center.id }}', '{{ center.name }}')" 
+                                                title="حذف">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if centers.pages > 1 %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if centers.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">الأولى</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ centers.prev_num }}">السابقة</a>
+                            </li>
+                        {% endif %}
+
+                        {% for page_num in centers.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num == centers.page %}
+                                    <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                                {% else %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a></li>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if centers.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ centers.next_num }}">التالية</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ centers.pages }}">الأخيرة</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle"></i> لا توجد مؤسسات مسجلة حالياً
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تأكيد الحذف</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                هل أنت متأكد من رغبتك في حذف المؤسسة <strong id="centerName"></strong>؟
+                <br><small class="text-danger">هذا الإجراء لا يمكن التراجع عنه</small>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let deleteModal;
+let centerToDelete = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+});
+
+function deleteCenter(centerId, centerName) {
+    centerToDelete = centerId;
+    document.getElementById('centerName').textContent = centerName;
+    document.getElementById('confirmDeleteBtn').onclick = function() {
+        performDelete(centerId);
+    };
+    deleteModal.show();
+}
+
+function performDelete(centerId) {
+    fetch(`{{ url_for('vocational_centers.delete_center', center_id='') }}${centerId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('خطأ: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('حدث خطأ في الاتصال');
+    });
+}
+</script>
+
+<style>
+    .table-hover tbody tr:hover {
+        background-color: rgba(102, 126, 234, 0.05);
+    }
+    
+    .btn-group {
+        gap: 0.25rem;
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: var(--primary);
+    }
+</style>
+{% endblock %}

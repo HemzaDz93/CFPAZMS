@@ -307,4 +307,27 @@ def delete_item(id):
 
 ---
 
+## مخطط معماري مركزي (Mermaid)
+
+يمكنك عرض المخطط التالي في أي عارض يدعم Mermaid (GitHub، VS Code Mermaid Preview، إلخ):
+
+```mermaid
+graph LR
+    Browser["مستخدم / واجهة أمامية (Browser)"] -->|HTTP| Flask["Flask App (routes/*)"]
+    Flask -->|ORM| DB[("قاعدة البيانات (SQL)")]
+    Flask --> Templates["Jinja2 Templates"]
+    Flask -->|Context Processor| Permissions["permissions_config.py"]
+    Flask -->|Login| Auth["Flask-Login"]
+    DB -->|Models| Models["models.py (User, UserPermission, ...)"]
+    subgraph Services
+        Notifications["خدمة الإشعارات"]
+        Exports["خدمة التصدير (PDF/Excel)"]
+    end
+    Flask --> Services
+
+    click Database
+```
+
+> ملاحظة: هذا المخطط مقتبس من `DESIGN.md` ويقدّم تصويرًا مركزيًا لتدفقات الطلبات والصلاحيات داخل التطبيق.
+
 **جميع الأجزاء تعمل معاً لضمان نظام صلاحيات آمن وموثوق!**

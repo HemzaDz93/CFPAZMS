@@ -1,0 +1,50 @@
+    def calculate_totals(self):
+        """حساب الإجماليات من العمليات"""
+        transactions = EmployeeMealTransaction.query.filter(
+            EmployeeMealTransaction.user_id == self.user_id,
+            EmployeeMealTransaction.transaction_date.between(
+                datetime.strptime(f"{self.payroll_period}-01", "%Y-%m-%d").date(),
+                datetime.strptime(f"{self.payroll_period}-28", "%Y-%m-%d").date()
+            )
+        ).all()
+        
+        self.total_meal_cost = sum(t.meal_cost for t in transactions)
+        self.total_subsidy_amount = sum(t.discount_amount for t in transactions)
+        self.total_employee_payment = sum(t.final_cost for t in transactions)
+        self.total_meals_consumed = len(transactions)
+        
+        return {
+            'total_meal_cost': self.total_meal_cost,
+            'total_subsidy': self.total_subsidy_amount,
+            'employee_payment': self.total_employee_payment
+        }
+
+
+class EmployeeMealAlert(db.Model):
+    """نموذج التنبيهات عند تجاوز حد المستحقات"""
+    __tablename__ = 'employee_meal_alerts'
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    
+    # التنبيه
+    alert_type = db.Column(db.String(50), nullable=False)  # threshold_exceeded, payment_due, etc
+    alert_threshold = db.Column(db.Float, nullable=False)  # الحد المسموح
+    current_amount = db.Column(db.Float, nullable=False)  # المبلغ الحالي
+    alert_date = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # حالة التنبيه
+    is_read = db.Column(db.Boolean, default=False)
+    is_resolved = db.Column(db.Boolean, default=False)
+    resolved_date = db.Column(db.DateTime, nullable=True)
+    resolved_by = db.Column(db.String(255), nullable=True)
+    
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # العلاقات
+    user = db.relationship('User', backref='meal_alerts')
+    
+    def __repr__(self):
+        return f'<EmployeeMealAlert {self.user_id}:{self.alert_type}>'

@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}إدارة الموظفين - نظام إدارة المؤسسات الشاملة{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center gap-3">
+                <i class="fas fa-users" style="font-size: 2rem; color: var(--primary);"></i>
+                <div>
+                    <h1 class="h3 mb-0" style="color: var(--dark-text);">إدارة الموظفين</h1>
+                    <small class="text-muted">{{ center.name }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('vocational_centers.add_employee', center_id=center.id) }}" class="btn btn-primary me-2">
+                <i class="fas fa-plus"></i> إضافة موظف جديد
+            </a>
+            <a href="{{ url_for('vocational_centers.view_center', center_id=center.id) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> العودة
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">إجمالي الموظفين</small>
+                            <h3 class="h5 mb-0" style="color: var(--primary);">{{ employees.total }}</h3>
+                        </div>
+                        <i class="fas fa-users" style="font-size: 2rem; color: var(--primary); opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employees Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom" style="border-color: var(--primary) !important;">
+            <h5 class="mb-0" style="color: var(--dark-text);">
+                <i class="fas fa-list"></i> قائمة الموظفين
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if employees.items %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>الاسم الكامل</th>
+                                <th>اسم المستخدم</th>
+                                <th>الدور</th>
+                                <th>الوظيفة</th>
+                                <th>القسم</th>
+                                <th>البريد الإلكتروني</th>
+                                <th>الهاتف</th>
+                                <th>الحالة</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employee in employees.items %}
+                            <tr>
+                                <td>
+                                    <strong>{{ employee.full_name or '-' }}</strong>
+                                </td>
+                                <td>{{ employee.username }}</td>
+                                <td>
+                                    {% if employee.role == 'admin' %}
+                                        <span class="badge" style="background-color: #ef4444;">مدير النظام</span>
+                                    {% elif employee.role == 'center_manager' %}
+                                        <span class="badge" style="background-color: #667eea;">مدير المركز</span>
+                                    {% elif employee.role == 'worker' %}
+                                        <span class="badge" style="background-color: #10b981;">موظف</span>
+                                    {% else %}
+                                        <span class="badge" style="background-color: #6b7280;">{{ employee.role }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ employee.position or '-' }}</td>
+                                <td>{{ employee.department or '-' }}</td>
+                                <td>{{ employee.email or '-' }}</td>
+                                <td>{{ employee.phone or '-' }}</td>
+                                <td>
+                                    {% if employee.is_active %}
+                                        <span class="badge bg-success">نشط</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">معطل</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('admin.edit_user', user_id=employee.id) }}" 
+                                           class="btn btn-sm btn-outline-primary" title="تعديل">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if employees.pages > 1 %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if employees.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">الأولى</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ employees.prev_num }}">السابقة</a>
+                            </li>
+                        {% endif %}
+
+                        {% for page_num in employees.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num == employees.page %}
+                                    <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                                {% else %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a></li>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if employees.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ employees.next_num }}">التالية</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ employees.pages }}">الأخيرة</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle"></i> لا يوجد موظفون مسجلون حالياً
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-hover tbody tr:hover {
+        background-color: rgba(102, 126, 234, 0.05);
+    }
+    
+    .btn-group {
+        gap: 0.25rem;
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: var(--primary);
+    }
+    
+    .card {
+        border: 1px solid rgba(102, 126, 234, 0.1);
+    }
+</style>
+{% endblock %}

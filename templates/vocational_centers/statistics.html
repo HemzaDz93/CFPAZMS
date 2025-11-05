@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+
+{% block title %}إحصائيات المؤسسة - نظام إدارة المؤسسات الشاملة{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center gap-3">
+                <i class="fas fa-chart-bar" style="font-size: 2rem; color: var(--primary);"></i>
+                <div>
+                    <h1 class="h3 mb-0" style="color: var(--dark-text);">إحصائيات المؤسسة</h1>
+                    <small class="text-muted">{{ center.name }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('vocational_centers.view_center', center_id=center.id) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> العودة
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Statistics -->
+    {% if stats %}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">إجمالي الموظفين</small>
+                            <h3 class="h5 mb-0" style="color: var(--primary);">{{ stats.total_employees }}</h3>
+                        </div>
+                        <i class="fas fa-users" style="font-size: 2rem; color: var(--primary); opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">أصناف المخزن</small>
+                            <h3 class="h5 mb-0" style="color: var(--success);">{{ stats.inventory_items }}</h3>
+                        </div>
+                        <i class="fas fa-boxes" style="font-size: 2rem; color: var(--success); opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">الموردون النشطون</small>
+                            <h3 class="h5 mb-0" style="color: var(--warning);">{{ stats.suppliers }}</h3>
+                        </div>
+                        <i class="fas fa-truck" style="font-size: 2rem; color: var(--warning); opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">الوصفات</small>
+                            <h3 class="h5 mb-0" style="color: var(--info);">{{ stats.recipes }}</h3>
+                        </div>
+                        <i class="fas fa-utensils" style="font-size: 2rem; color: var(--info); opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">إجمالي المعاملات</small>
+                            <h3 class="h5 mb-0" style="color: #764ba2;">{{ stats.total_transactions }}</h3>
+                        </div>
+                        <i class="fas fa-exchange-alt" style="font-size: 2rem; color: #764ba2; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">الموظفون النشطون</small>
+                            <h3 class="h5 mb-0" style="color: var(--success);">{{ stats.total_employees }}</h3>
+                        </div>
+                        <i class="fas fa-user-check" style="font-size: 2rem; color: var(--success); opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">معدل نشاط المؤسسة</small>
+                            <h3 class="h5 mb-0" style="color: #f59e0b;">
+                                {% if stats.total_transactions > 0 %}
+                                    {{  "%.1f"|format((stats.total_transactions / 30)) }} /يوم
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </h3>
+                        </div>
+                        <i class="fas fa-chart-line" style="font-size: 2rem; color: #f59e0b; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    {% if stats.recent_transactions %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom" style="border-color: var(--primary) !important;">
+            <h5 class="mb-0" style="color: var(--dark-text);">
+                <i class="fas fa-list"></i> آخر المعاملات (5)
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead class="table-light">
+                        <tr>
+                            <th>النوع</th>
+                            <th>الصنف</th>
+                            <th>الكمية</th>
+                            <th>التاريخ</th>
+                            <th>الملاحظات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in stats.recent_transactions %}
+                        <tr>
+                            <td>
+                                <span class="badge" 
+                                      style="background-color: {% if transaction.type == 'purchase' %}#10b981{% elif transaction.type == 'issue' %}#ef4444{% elif transaction.type == 'transfer' %}#667eea{% else %}#f59e0b{% endif %};">
+                                    {% if transaction.type == 'purchase' %}
+                                        شراء
+                                    {% elif transaction.type == 'issue' %}
+                                        إصدار
+                                    {% elif transaction.type == 'transfer' %}
+                                        نقل
+                                    {% elif transaction.type == 'return' %}
+                                        إرجاع
+                                    {% else %}
+                                        تعديل
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>{{ transaction.item.name if transaction.item else '-' }}</td>
+                            <td>{{ transaction.quantity }} {{ transaction.item.unit if transaction.item else '-' }}</td>
+                            <td>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ transaction.reference_number or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+            <i class="fas fa-inbox" style="font-size: 2rem; color: var(--primary); opacity: 0.3;"></i>
+            <p class="text-muted mt-2">لا توجد معاملات حتى الآن</p>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+
+<style>
+    .card {
+        border: 1px solid rgba(102, 126, 234, 0.1);
+    }
+    
+    .badge {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+    }
+    
+    .table-sm {
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}

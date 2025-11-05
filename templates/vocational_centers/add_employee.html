@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+
+{% block title %}إضافة موظف جديد - نظام إدارة المؤسسات الشاملة{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center gap-3">
+                <i class="fas fa-user-plus" style="font-size: 2rem; color: var(--primary);"></i>
+                <div>
+                    <h1 class="h3 mb-0" style="color: var(--dark-text);">إضافة موظف جديد</h1>
+                    <small class="text-muted">{{ center.name }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('vocational_centers.manage_employees', center_id=center.id) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> العودة
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Form -->
+    <form method="POST" class="needs-validation" novalidate>
+        <!-- Personal Information -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom" style="border-color: var(--primary) !important;">
+                <h5 class="mb-0" style="color: var(--dark-text);">
+                    <i class="fas fa-user"></i> المعلومات الشخصية
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="first_name" class="form-label">الاسم الأول <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="first_name" name="first_name" required 
+                               placeholder="أدخل الاسم الأول">
+                        <div class="invalid-feedback">يرجى إدخال الاسم الأول</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="last_name" class="form-label">اسم العائلة <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="last_name" name="last_name" required 
+                               placeholder="أدخل اسم العائلة">
+                        <div class="invalid-feedback">يرجى إدخال اسم العائلة</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Information -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom" style="border-color: var(--primary) !important;">
+                <h5 class="mb-0" style="color: var(--dark-text);">
+                    <i class="fas fa-sign-in-alt"></i> معلومات الحساب
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="username" class="form-label">اسم المستخدم <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="username" name="username" required 
+                               placeholder="اسم مستخدم فريد" maxlength="50">
+                        <div class="invalid-feedback">يرجى إدخال اسم مستخدم فريد</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label">البريد الإلكتروني <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="email" name="email" required 
+                               placeholder="البريد الإلكتروني">
+                        <div class="invalid-feedback">يرجى إدخال بريد إلكتروني صحيح</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="password" class="form-label">كلمة المرور</label>
+                        <input type="password" class="form-control" id="password" name="password" 
+                               placeholder="اتركه فارغاً للاستخدام الافتراضي (12345678)">
+                        <small class="form-text text-muted">إذا تركت الحقل فارغاً، سيتم استخدام كلمة المرور الافتراضية</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="role" class="form-label">الدور <span class="text-danger">*</span></label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="">اختر الدور</option>
+                            <option value="admin">مدير النظام</option>
+                            <option value="center_manager">مدير المركز</option>
+                            <option value="worker" selected>موظف</option>
+                        </select>
+                        <div class="invalid-feedback">يرجى اختيار دور للموظف</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Work Information -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom" style="border-color: var(--primary) !important;">
+                <h5 class="mb-0" style="color: var(--dark-text);">
+                    <i class="fas fa-briefcase"></i> معلومات العمل
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="position" class="form-label">الوظيفة</label>
+                        <input type="text" class="form-control" id="position" name="position" 
+                               placeholder="مثال: محاسب، مخزنجي، إلخ">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="department" class="form-label">القسم / الإدارة</label>
+                        <input type="text" class="form-control" id="department" name="department" 
+                               placeholder="مثال: المالية، الموارد البشرية، إلخ">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom" style="border-color: var(--primary) !important;">
+                <h5 class="mb-0" style="color: var(--dark-text);">
+                    <i class="fas fa-phone"></i> معلومات الاتصال
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="phone" class="form-label">رقم الهاتف</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" 
+                               placeholder="رقم الهاتف" dir="ltr">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex gap-2 justify-content-end">
+                    <a href="{{ url_for('vocational_centers.manage_employees', center_id=center.id) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> إلغاء
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> إضافة الموظف
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
+
+<style>
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: var(--dark-text);
+    }
+    
+    .card {
+        border: 1px solid rgba(102, 126, 234, 0.1);
+    }
+</style>
+{% endblock %}

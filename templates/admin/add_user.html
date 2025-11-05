@@ -102,16 +102,24 @@
                             {% for category, data in permissions.items() %}
                             <div class="col-md-6 mb-4">
                                 <div class="card border-light">
-                                    <div class="card-header bg-light">
+                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
                                         <h6 class="mb-0">
                                             <i class="fas fa-key"></i> {{ data.name }}
                                         </h6>
+                                        <div class="form-check mb-0">
+                                            <input class="form-check-input select-all-checkbox" type="checkbox" 
+                                                   id="select_all_{{ category }}" data-category="{{ category }}">
+                                            <label class="form-check-label" for="select_all_{{ category }}" style="font-size: 0.85rem; cursor: pointer;">
+                                                تحديد الكل
+                                            </label>
+                                        </div>
                                     </div>
                                     <div class="card-body">
                                         {% for perm_key, perm_name in data.permissions.items() %}
                                         <div class="form-check mb-2">
-                                            <input class="form-check-input" type="checkbox" 
-                                                   id="perm_{{ perm_key }}" name="perm_{{ perm_key }}">
+                                            <input class="form-check-input category-checkbox" type="checkbox" 
+                                                   id="perm_{{ perm_key }}" name="perm_{{ perm_key }}"
+                                                   data-category="{{ category }}">
                                             <label class="form-check-label" for="perm_{{ perm_key }}">
                                                 {{ perm_name }}
                                             </label>
@@ -138,4 +146,78 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // التعامل مع أزرار تحديد الكل
+    const selectAllCheckboxes = document.querySelectorAll('.select-all-checkbox');
+    const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
+
+    // عند الضغط على checkbox تحديد الكل
+    selectAllCheckboxes.forEach(selectAllCheckbox => {
+        selectAllCheckbox.addEventListener('change', function() {
+            const category = this.getAttribute('data-category');
+            const isChecked = this.checked;
+            
+            // تحديد/إلغاء تحديد جميع الصلاحيات في هذه الفئة
+            categoryCheckboxes.forEach(checkbox => {
+                if (checkbox.getAttribute('data-category') === category) {
+                    checkbox.checked = isChecked;
+                }
+            });
+        });
+    });
+
+    // عند تغيير أي checkbox في الصلاحيات
+    categoryCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const category = this.getAttribute('data-category');
+            const selectAllCheckbox = document.getElementById('select_all_' + category);
+            
+            // جلب جميع checkboxes في هذه الفئة
+            const categoryCheckboxesInGroup = Array.from(categoryCheckboxes).filter(cb => 
+                cb.getAttribute('data-category') === category
+            );
+            
+            // حساب عدد الـ checkboxes المحددة
+            const checkedCount = categoryCheckboxesInGroup.filter(cb => cb.checked).length;
+            const totalCount = categoryCheckboxesInGroup.length;
+            
+            // تحديث حالة "تحديد الكل"
+            if (checkedCount === totalCount && totalCount > 0) {
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.indeterminate = false;
+            } else if (checkedCount > 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = true;
+            } else {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            }
+        });
+    });
+
+    // تحديث حالة "تحديد الكل" عند تحميل الصفحة
+    selectAllCheckboxes.forEach(selectAllCheckbox => {
+        const category = selectAllCheckbox.getAttribute('data-category');
+        const categoryCheckboxesInGroup = Array.from(categoryCheckboxes).filter(cb => 
+            cb.getAttribute('data-category') === category
+        );
+        
+        const checkedCount = categoryCheckboxesInGroup.filter(cb => cb.checked).length;
+        const totalCount = categoryCheckboxesInGroup.length;
+        
+        if (checkedCount === totalCount && totalCount > 0) {
+            selectAllCheckbox.checked = true;
+            selectAllCheckbox.indeterminate = false;
+        } else if (checkedCount > 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = true;
+        } else {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        }
+    });
+});
+</script>
 {% endblock %}

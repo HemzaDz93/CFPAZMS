@@ -23,6 +23,20 @@ def create_app(config_name=None):
     # تهيئة قاعدة البيانات
     db.init_app(app)
     
+    # تهيئة نظام الأمان المتقدم (Phase 2)
+    try:
+        from security_middleware import init_security_middleware
+        init_security_middleware(app)
+    except ImportError:
+        app.logger.warning('Security middleware not available')
+    
+    # تهيئة نظام Multi-Tenant (عزل البيانات حسب المركز)
+    try:
+        from multi_tenant_middleware import init_multi_tenant_middleware
+        init_multi_tenant_middleware(app)
+    except ImportError:
+        app.logger.warning('Multi-tenant middleware not available')
+    
     # تهيئة نظام تسجيل الدخول
     login_manager = LoginManager()
     login_manager.init_app(app)
@@ -48,6 +62,8 @@ def create_app(config_name=None):
     from routes.about import about_bp
     from routes.notifications import notifications_bp
     from routes.employee_meals import employee_meals_bp
+    from routes.security_advanced import security_bp
+    from routes.vocational_centers import vc_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
@@ -62,6 +78,8 @@ def create_app(config_name=None):
     app.register_blueprint(about_bp)
     app.register_blueprint(notifications_bp)
     app.register_blueprint(employee_meals_bp)
+    app.register_blueprint(security_bp)
+    app.register_blueprint(vc_bp)
     
     # Jinja2 Filters
     @app.template_filter('b64encode')
@@ -223,4 +241,4 @@ if __name__ == '__main__':
     app = create_app()
     with app.app_context():
         db.create_all()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5002)

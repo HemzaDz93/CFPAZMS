@@ -5,7 +5,7 @@ from flask import (
 from flask_login import login_required, current_user
 from models import (
     db, User, UserRole, OrganizationSettings, 
-    ActivityLog, UserPermission
+    UserPermission, ActivityLog
 )
 from permissions_config import get_permissions_by_category, get_all_permissions_flat
 from datetime import datetime

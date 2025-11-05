@@ -39,6 +39,52 @@ class Config:
     MEAL_COST_PER_UNIT = float(os.environ.get('MEAL_COST_PER_UNIT', 2.5))  # دينار جزائري
     MEAL_ALERT_THRESHOLD = float(os.environ.get('MEAL_ALERT_THRESHOLD', 500))  # التنبيه عند تجاوز 500 دج
     
+    # Advanced Security Settings - Phase 2
+    # Password Policy
+    PASSWORD_MIN_LENGTH = int(os.environ.get('PASSWORD_MIN_LENGTH', 12))
+    PASSWORD_REQUIRE_UPPERCASE = os.environ.get('PASSWORD_REQUIRE_UPPERCASE', 'true').lower() == 'true'
+    PASSWORD_REQUIRE_LOWERCASE = os.environ.get('PASSWORD_REQUIRE_LOWERCASE', 'true').lower() == 'true'
+    PASSWORD_REQUIRE_NUMBERS = int(os.environ.get('PASSWORD_REQUIRE_NUMBERS', 1))
+    PASSWORD_REQUIRE_SPECIAL_CHARS = int(os.environ.get('PASSWORD_REQUIRE_SPECIAL_CHARS', 1))
+    PASSWORD_EXPIRY_DAYS = int(os.environ.get('PASSWORD_EXPIRY_DAYS', 90))
+    PASSWORD_HISTORY_COUNT = int(os.environ.get('PASSWORD_HISTORY_COUNT', 5))
+    
+    # Session Management
+    SESSION_TIMEOUT_MINUTES = int(os.environ.get('SESSION_TIMEOUT_MINUTES', 30))
+    MAX_SESSIONS_PER_USER = int(os.environ.get('MAX_SESSIONS_PER_USER', 5))
+    
+    # Rate Limiting
+    RATE_LIMIT_ENABLED = os.environ.get('RATE_LIMIT_ENABLED', 'true').lower() == 'true'
+    RATE_LIMIT_DEFAULT_PER_MINUTE = int(os.environ.get('RATE_LIMIT_DEFAULT_PER_MINUTE', 60))
+    
+    # Login Security
+    LOGIN_ATTEMPT_LIMIT = int(os.environ.get('LOGIN_ATTEMPT_LIMIT', 5))
+    LOGIN_LOCKOUT_DURATION_MINUTES = int(os.environ.get('LOGIN_LOCKOUT_DURATION_MINUTES', 30))
+    
+    # MFA Settings
+    MFA_ENABLED = os.environ.get('MFA_ENABLED', 'false').lower() == 'true'
+    MFA_REQUIRED_FOR_ADMINS = os.environ.get('MFA_REQUIRED_FOR_ADMINS', 'true').lower() == 'true'
+    
+    # IP Whitelisting
+    IP_WHITELIST_ENABLED = os.environ.get('IP_WHITELIST_ENABLED', 'false').lower() == 'true'
+    
+    # Encryption
+    ENCRYPTION_ENABLED = os.environ.get('ENCRYPTION_ENABLED', 'true').lower() == 'true'
+    ENCRYPTION_KEY = os.environ.get('ENCRYPTION_KEY', '')
+    
+    # OAuth Configuration (for SSO)
+    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
+    AZURE_CLIENT_ID = os.environ.get('AZURE_CLIENT_ID', '')
+    AZURE_CLIENT_SECRET = os.environ.get('AZURE_CLIENT_SECRET', '')
+    
+    # Audit Logging
+    AUDIT_LOGGING_ENABLED = os.environ.get('AUDIT_LOGGING_ENABLED', 'true').lower() == 'true'
+    SECURITY_LOG_RETENTION_DAYS = int(os.environ.get('SECURITY_LOG_RETENTION_DAYS', 365))
+    
+    # CORS Configuration
+    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '*').split(',')
+    
     @staticmethod
     def init_app(app):
         """تهيئة التطبيق"""

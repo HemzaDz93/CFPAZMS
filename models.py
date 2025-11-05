@@ -11,11 +11,16 @@ db = SQLAlchemy()
 class UserRole(str, Enum):
     """أدوار المستخدمين"""
     ADMIN = "admin"  # مدير النظام
+    FOUNDER = "founder"  # المؤسس / وزير التكوين المهني
+    CENTER_MANAGER = "center_manager"  # مدير مركز التكوين
     DIRECTOR = "director"  # مدير المؤسسة
+    INSTRUCTOR = "instructor"  # المدرب
+    TECHNICIAN = "technician"  # الفني
     WAREHOUSE_MANAGER = "warehouse_manager"  # أمين المخزن
     ACCOUNTANT = "accountant"  # محاسب
     ECONOMIST = "economist"  # مقتصد
     CHEF = "chef"  # الطباخ
+    ADMIN_STAFF = "admin_staff"  # موظف إداري
     WORKER = "worker"  # عامل/عون
     VIEWER = "viewer"  # مشاهد فقط
 
@@ -41,6 +46,70 @@ class TransactionType(str, Enum):
     RETURN = "return"  # إرجاع
     TRANSFER = "transfer"  # تحويل
     ADJUSTMENT = "adjustment"  # تسوية
+
+# ==================== Vocational Center System Enums ====================
+
+class VocationalCenterStatus(str, Enum):
+    """حالة مركز التكوين"""
+    ACTIVE = "active"  # نشط
+    INACTIVE = "inactive"  # معطل
+    UNDER_MAINTENANCE = "under_maintenance"  # تحت الصيانة
+
+class TrainingLevel(str, Enum):
+    """مستوى التدريب"""
+    BASIC = "basic"  # أساسي
+    INTERMEDIATE = "intermediate"  # متقدم
+    ADVANCED = "advanced"  # متقدم جداً
+
+class TraineeStatus(str, Enum):
+    """حالة المتدرب"""
+    ENROLLED = "enrolled"  # مسجل
+    ACTIVE = "active"  # نشط
+    GRADUATED = "graduated"  # متخرج
+    DROPPED_OUT = "dropped_out"  # انقطع
+    SUSPENDED = "suspended"  # معلق
+
+class EquipmentCondition(str, Enum):
+    """حالة المعدة"""
+    NEW = "new"  # جديد
+    GOOD = "good"  # صالح
+    FAIR = "fair"  # متوسط
+    POOR = "poor"  # سيء
+    UNDER_MAINTENANCE = "under_maintenance"  # تحت الصيانة
+    OUT_OF_SERVICE = "out_of_service"  # خارج الخدمة
+
+class ResourceType(str, Enum):
+    """نوع الموارد"""
+    EQUIPMENT = "equipment"  # معدة/آلة
+    TOOL = "tool"  # أداة
+    MATERIAL = "material"  # خامة/مادة
+    CONSUMABLE = "consumable"  # قابل للاستهلاك
+    BOOK = "book"  # كتاب
+    OFFICE = "office"  # تجهيزات مكتبية
+    OTHER = "other"  # أخرى
+
+class TransferRequestStatus(str, Enum):
+    """حالة طلب النقل"""
+    PENDING = "pending"  # قيد الانتظار
+    FROM_CENTER_APPROVED = "from_center_approved"  # موافقة من مدير المركز المصدر
+    TO_CENTER_APPROVED = "to_center_approved"  # موافقة من مدير المركز المستقبل
+    FOUNDER_APPROVED = "founder_approved"  # موافقة من المؤسس
+    APPROVED = "approved"  # موافق نهائياً
+    REJECTED = "rejected"  # مرفوض
+    COMPLETED = "completed"  # مكتمل
+
+class MaintenanceType(str, Enum):
+    """نوع الصيانة"""
+    PREVENTIVE = "preventive"  # صيانة دورية
+    CORRECTIVE = "corrective"  # صيانة إصلاح
+    EMERGENCY = "emergency"  # صيانة طارئة
+
+class MaintenanceStatus(str, Enum):
+    """حالة الصيانة"""
+    SCHEDULED = "scheduled"  # مجدولة
+    IN_PROGRESS = "in_progress"  # قيد الإنجاز
+    COMPLETED = "completed"  # مكتملة
+    PENDING = "pending"  # معلقة
 
 # ==================== Models ====================
 
@@ -95,6 +164,9 @@ class User(UserMixin, db.Model):
     first_name = db.Column(db.String(64), nullable=False)
     last_name = db.Column(db.String(64), nullable=False)
     
+    # نظام مراكز التكوين المهني
+    center_id = db.Column(db.String(36), db.ForeignKey('vocational_centers.id'), nullable=True)  # مركز التكوين (اختياري للمؤسس)
+    
     role = db.Column(db.String(50), nullable=False, default=UserRole.WORKER)
     department = db.Column(db.String(100), nullable=True)
     position = db.Column(db.String(100), nullable=True)
@@ -114,6 +186,7 @@ class User(UserMixin, db.Model):
     issued_items = db.relationship('ItemIssue', backref='issued_to', lazy=True)
     transactions = db.relationship('Transaction', backref='created_by_user', lazy=True)
     user_permissions = db.relationship('UserPermission', backref='user', lazy=True, cascade='all, delete-orphan')
+    vocational_center = db.relationship('VocationalCenter', backref='employees', foreign_keys=[center_id])
     
     def set_password(self, password):
         """تعيين كلمة المرور (مشفرة)"""
@@ -178,6 +251,9 @@ class UserPermission(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False, index=True)
     
+    # Multi-Tenant Support - صلاحيات خاصة بمركز معين أو عام (None = عام لجميع المراكز)
+    center_id = db.Column(db.String(36), db.ForeignKey('vocational_centers.id'), nullable=True, index=True)
+    
     permission_key = db.Column(db.String(100), nullable=False)  # مفتاح الصلاحية
     permission_name = db.Column(db.String(255), nullable=False)  # اسم الصلاحية
     permission_category = db.Column(db.String(100), nullable=False)  # الفئة (inventory, equipment, etc)
@@ -187,7 +263,7 @@ class UserPermission(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    __table_args__ = (db.UniqueConstraint('user_id', 'permission_key', name='unique_user_permission'),)
+    __table_args__ = (db.UniqueConstraint('user_id', 'permission_key', 'center_id', name='unique_user_permission_per_center'),)
     
     def __repr__(self):
         return f'<UserPermission {self.user_id}:{self.permission_key}>'
@@ -220,12 +296,24 @@ class Item(db.Model):
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=True)
     
+    # نظام مراكز التكوين المهني
+    center_id = db.Column(db.String(36), db.ForeignKey('vocational_centers.id'), nullable=True)  # مركز التكوين الذي يملك المادة
+    training_program_id = db.Column(db.String(36), db.ForeignKey('training_programs.id'), nullable=True)  # البرنامج المرتبط
+    resource_type = db.Column(db.String(50), default=ResourceType.OTHER)  # نوع الموارد
+    
     category_id = db.Column(db.Integer, db.ForeignKey('item_categories.id'), nullable=False)
     unit = db.Column(db.String(50), nullable=False)  # قطعة، كغ، لتر، إلخ
     
     quantity_in_stock = db.Column(db.Float, default=0)
     minimum_quantity = db.Column(db.Float, default=0)  # الحد الأدنى للمخزون
     unit_price = db.Column(db.Float, nullable=True)
+    
+    # معلومات إضافية للمعدات التدريبية
+    is_consumable = db.Column(db.Boolean, default=False)  # هل قابلة للاستهلاك (مواد خام)
+    purchase_date = db.Column(db.DateTime, nullable=True)
+    warranty_expiry = db.Column(db.DateTime, nullable=True)
+    condition = db.Column(db.String(50), default=EquipmentCondition.GOOD)  # حالة المعدة
+    location = db.Column(db.String(255), nullable=True)  # الموقع الفعلي
     
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -234,6 +322,8 @@ class Item(db.Model):
     # العلاقات
     transactions = db.relationship('Transaction', backref='item', lazy=True)
     asset_registrations = db.relationship('AssetRegistration', backref='item', lazy=True)
+    vocational_center = db.relationship('VocationalCenter', backref='inventory_items', foreign_keys=[center_id])
+    training_program = db.relationship('TrainingProgram', backref='required_items', foreign_keys=[training_program_id])
     
     def __repr__(self):
         return f'<Item {self.code}>'
@@ -249,7 +339,11 @@ class Supplier(db.Model):
     __tablename__ = 'suppliers'
     
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    code = db.Column(db.String(50), unique=True, nullable=False)
+    
+    # Multi-Tenant Support
+    center_id = db.Column(db.String(36), db.ForeignKey('vocational_centers.id'), nullable=True)
+    
+    code = db.Column(db.String(50), nullable=False)
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=True)
     
@@ -273,6 +367,8 @@ class Supplier(db.Model):
     # العلاقات
     purchase_orders = db.relationship('PurchaseOrder', backref='supplier', lazy=True)
     
+    __table_args__ = (db.UniqueConstraint('code', 'center_id', name='unique_supplier_code_per_center'),)
+    
     def __repr__(self):
         return f'<Supplier {self.name}>'
 
@@ -282,7 +378,11 @@ class PurchaseOrder(db.Model):
     __tablename__ = 'purchase_orders'
     
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    po_number = db.Column(db.String(50), unique=True, nullable=False)
+    
+    # Multi-Tenant Support
+    center_id = db.Column(db.String(36), db.ForeignKey('vocational_centers.id'), nullable=True)
+    
+    po_number = db.Column(db.String(50), nullable=False)
     supplier_id = db.Column(db.String(36), db.ForeignKey('suppliers.id'), nullable=False)
     
     order_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
@@ -297,6 +397,8 @@ class PurchaseOrder(db.Model):
     
     # العلاقات
     items = db.relationship('PurchaseOrderItem', backref='purchase_order', lazy=True, cascade='all, delete-orphan')
+    
+    __table_args__ = (db.UniqueConstraint('po_number', 'center_id', name='unique_po_per_center'),)
     
     def __repr__(self):
         return f'<PurchaseOrder {self.po_number}>'
@@ -327,6 +429,9 @@ class Transaction(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     reference_number = db.Column(db.String(50), unique=True, nullable=False)
     
+    # Multi-Tenant Support
+    center_id = db.Column(db.String(36), db.ForeignKey('vocational_centers.id'), nullable=True)
+    
     transaction_type = db.Column(db.String(50), nullable=False)  # purchase, issue, return, transfer, adjustment
     item_id = db.Column(db.String(36), db.ForeignKey('items.id'), nullable=False)
     
@@ -352,7 +457,11 @@ class AssetRegistration(db.Model):
     __tablename__ = 'asset_registrations'
     
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    asset_code = db.Column(db.String(50), unique=True, nullable=False)
+    
+    # Multi-Tenant Support
+    center_id = db.Column(db.String(36), db.ForeignKey('vocational_centers.id'), nullable=True)
+    
+    asset_code = db.Column(db.String(50), nullable=False)
     serial_number = db.Column(db.String(100), nullable=True)
     
     item_id = db.Column(db.String(36), db.ForeignKey('items.id'), nullable=False)
@@ -376,6 +485,8 @@ class AssetRegistration(db.Model):
     # العلاقات
     assignments = db.relationship('ItemIssue', backref='asset', lazy=True)
     scan_logs = db.relationship('AssetScanLog', backref='asset', lazy=True, cascade='all, delete-orphan')
+    
+    __table_args__ = (db.UniqueConstraint('asset_code', 'center_id', name='unique_asset_code_per_center'),)
     
     def __repr__(self):
         return f'<AssetRegistration {self.asset_code}>'
@@ -441,9 +552,12 @@ class Recipe(db.Model):
     __tablename__ = 'recipes'
     
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    code = db.Column(db.String(50), unique=True, nullable=False)
+    code = db.Column(db.String(50), nullable=False)
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=True)
+    
+    # Multi-Tenant Support
+    center_id = db.Column(db.String(36), db.ForeignKey('vocational_centers.id'), nullable=True)
     
     servings = db.Column(db.Integer, default=1)
     
@@ -453,6 +567,8 @@ class Recipe(db.Model):
     
     # العلاقات
     ingredients = db.relationship('RecipeIngredient', backref='recipe', lazy=True, cascade='all, delete-orphan')
+    
+    __table_args__ = (db.UniqueConstraint('code', 'center_id', name='unique_recipe_code_per_center'),)
     
     def __repr__(self):
         return f'<Recipe {self.name}>'
@@ -482,6 +598,9 @@ class MealRecord(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     record_date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
     
+    # Multi-Tenant Support
+    center_id = db.Column(db.String(36), db.ForeignKey('vocational_centers.id'), nullable=True)
+    
     meal_type = db.Column(db.String(50), nullable=False)  # breakfast, lunch, dinner
     recipe_id = db.Column(db.String(36), db.ForeignKey('recipes.id'), nullable=False)
     servings = db.Column(db.Integer, default=1)
@@ -501,6 +620,10 @@ class ActivityLog(db.Model):
     __tablename__ = 'activity_logs'
     
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    
+    # Multi-Tenant Support
+    center_id = db.Column(db.String(36), db.ForeignKey('vocational_centers.id'), nullable=True)
+    
     user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=True)
     action = db.Column(db.String(255), nullable=False)
     
@@ -2614,3 +2737,210 @@ class EmployeeMealAlert(db.Model):
     
     def __repr__(self):
         return f'<EmployeeMealAlert {self.user_id}:{self.alert_type}>'
+
+
+# ==================== VOCATIONAL TRAINING CENTER SYSTEM ====================
+
+class VocationalCenter(db.Model):
+    """نموذج مركز التكوين المهني (Multi-Tenant)"""
+    __tablename__ = 'vocational_centers'
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    
+    code = db.Column(db.String(50), unique=True, nullable=False, index=True)
+    name_ar = db.Column(db.String(255), nullable=False)
+    name_en = db.Column(db.String(255), nullable=True)
+    
+    ministry_name = db.Column(db.String(255), nullable=False, default="وزارة التكوين المهني")
+    directorate_name = db.Column(db.String(255), nullable=False, default="المديرية")
+    
+    phone = db.Column(db.String(20), nullable=True)
+    email = db.Column(db.String(120), nullable=True)
+    address = db.Column(db.Text, nullable=True)
+    
+    manager_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=True)
+    supervisor_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=True)
+    
+    specialization = db.Column(db.String(255), nullable=True)
+    capacity = db.Column(db.Integer, default=0)
+    budget_allocation = db.Column(db.Float, nullable=True)
+    
+    # Multi-Tenant Settings
+    meal_cost_per_unit = db.Column(db.Float, nullable=False, default=2.5)  # سعر الوجبة الواحدة
+    meal_alert_threshold = db.Column(db.Float, nullable=False, default=500.0)  # عتبة التنبيه
+    
+    # Data Isolation
+    is_active = db.Column(db.Boolean, default=True, index=True)
+    status = db.Column(db.String(50), default='active')
+    
+    # Metadata
+    tax_id = db.Column(db.String(50), nullable=True)  # الرقم الجبائي
+    registration_number = db.Column(db.String(100), nullable=True)  # رقم التسجيل
+    logo_path = db.Column(db.String(255), nullable=True)
+    website = db.Column(db.String(255), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by_id = db.Column(db.String(36), nullable=True)  # من أنشأ المركز
+    
+    def __repr__(self):
+        return f'<VocationalCenter {self.code} - {self.name_ar}>'
+    
+    def get_manager(self):
+        """الحصول على مدير المركز"""
+        return User.query.filter_by(id=self.manager_id).first()
+    
+    def get_employee_count(self):
+        """عدد الموظفين في المركز"""
+        return User.query.filter_by(center_id=self.id, is_active=True).count()
+    
+    def to_dict(self):
+        """تحويل إلى قاموس"""
+        return {
+            'id': self.id,
+            'code': self.code,
+            'name_ar': self.name_ar,
+            'name_en': self.name_en,
+            'status': self.status,
+            'employee_count': self.get_employee_count(),
+            'phone': self.phone,
+            'email': self.email
+        }
+
+
+class TrainingProgram(db.Model):
+    """نموذج البرنامج التدريبي"""
+    __tablename__ = 'training_programs'
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    center_id = db.Column(db.String(36), db.ForeignKey('vocational_centers.id'), nullable=False, index=True)
+    
+    code = db.Column(db.String(50), unique=True, nullable=False)
+    name_ar = db.Column(db.String(255), nullable=False)
+    name_en = db.Column(db.String(255), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    
+    duration_hours = db.Column(db.Integer, nullable=False)
+    duration_months = db.Column(db.Integer, nullable=True)
+    level = db.Column(db.String(50), default='basic')
+    
+    instructor_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=True)
+    max_trainees = db.Column(db.Integer, default=30)
+    current_trainees = db.Column(db.Integer, default=0)
+    
+    start_date = db.Column(db.DateTime, nullable=True)
+    end_date = db.Column(db.DateTime, nullable=True)
+    
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<TrainingProgram {self.name_ar}>'
+
+
+class Trainee(db.Model):
+    """نموذج المتدرب"""
+    __tablename__ = 'trainees'
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    center_id = db.Column(db.String(36), db.ForeignKey('vocational_centers.id'), nullable=False, index=True)
+    program_id = db.Column(db.String(36), db.ForeignKey('training_programs.id'), nullable=False, index=True)
+    
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+    national_id = db.Column(db.String(50), unique=True, nullable=True)
+    email = db.Column(db.String(120), nullable=True)
+    phone = db.Column(db.String(20), nullable=True)
+    
+    enrollment_date = db.Column(db.DateTime, default=datetime.utcnow)
+    graduation_date = db.Column(db.DateTime, nullable=True)
+    
+    status = db.Column(db.String(50), default='enrolled')
+    notes = db.Column(db.Text, nullable=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<Trainee {self.first_name} {self.last_name}>'
+    
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
+
+class EquipmentTransferRequest(db.Model):
+    """نموذج طلب نقل المعدات"""
+    __tablename__ = 'equipment_transfer_requests'
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    
+    from_center_id = db.Column(db.String(36), db.ForeignKey('vocational_centers.id'), nullable=False, index=True)
+    to_center_id = db.Column(db.String(36), db.ForeignKey('vocational_centers.id'), nullable=False, index=True)
+    
+    item_id = db.Column(db.String(36), db.ForeignKey('items.id'), nullable=False)
+    quantity = db.Column(db.Float, nullable=False)
+    
+    reason = db.Column(db.Text, nullable=False)
+    priority = db.Column(db.String(50), default='normal')
+    
+    requested_by_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    requested_date = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    from_manager_approval = db.Column(db.String(50), default='pending')
+    from_manager_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=True)
+    from_manager_date = db.Column(db.DateTime, nullable=True)
+    from_manager_notes = db.Column(db.Text, nullable=True)
+    
+    to_manager_approval = db.Column(db.String(50), default='pending')
+    to_manager_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=True)
+    to_manager_date = db.Column(db.DateTime, nullable=True)
+    to_manager_notes = db.Column(db.Text, nullable=True)
+    
+    founder_approval = db.Column(db.String(50), default='pending')
+    founder_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=True)
+    founder_date = db.Column(db.DateTime, nullable=True)
+    founder_notes = db.Column(db.Text, nullable=True)
+    
+    status = db.Column(db.String(50), default='pending')
+    rejection_reason = db.Column(db.Text, nullable=True)
+    
+    transfer_date = db.Column(db.DateTime, nullable=True)
+    transferred_by_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=True)
+    transfer_notes = db.Column(db.Text, nullable=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<EquipmentTransferRequest {self.id}>'
+
+
+class MaintenanceLog(db.Model):
+    """نموذج سجل الصيانة"""
+    __tablename__ = 'maintenance_logs'
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    
+    center_id = db.Column(db.String(36), db.ForeignKey('vocational_centers.id'), nullable=False, index=True)
+    item_id = db.Column(db.String(36), db.ForeignKey('items.id'), nullable=False)
+    
+    maintenance_type = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    performed_by_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    
+    maintenance_date = db.Column(db.DateTime, default=datetime.utcnow)
+    next_maintenance_date = db.Column(db.DateTime, nullable=True)
+    
+    cost = db.Column(db.Float, nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(50), default='completed')
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<MaintenanceLog {self.id}>'
+
